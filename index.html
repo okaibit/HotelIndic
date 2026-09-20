@@ -3,7 +3,6 @@
 <head>
 <style>/* launch-fixes */
 .rating-row{display:none !important;}
-#requestReviewBtn{display:none !important;}
 </style>
   <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
   (function () {
@@ -3775,5 +3774,17 @@ document.addEventListener("keydown", (event) => {
 
 
 </script>
-</body>
+<script>/* review-mailto */
+document.addEventListener("submit", function(e){
+  if(!e.target || e.target.id !== "reviewForm") return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  var d = Object.fromEntries(new FormData(e.target).entries());
+  var body = "Name: " + d.name + "\nEmail: " + d.email + "\nHotel: " + d.hotelName +
+             "\nCity: " + d.city + "\nWebsite: " + (d.website || "") + "\n\n" + d.message;
+  window.location.href = "mailto:okayielijah@gmail.com?subject=" +
+    encodeURIComponent("Hotel review request: " + d.hotelName) +
+    "&body=" + encodeURIComponent(body);
+}, true);
+</script></body>
 </html>
