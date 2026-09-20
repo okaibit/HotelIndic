@@ -1,6 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <style>
+@media (max-width: 860px){
+  header{
+    display:flex !important;
+    flex-wrap:wrap !important;
+    align-items:center !important;
+    gap:10px !important;
+    padding:12px 14px !important;
+  }
+  .wordmark{ order:1 !important; flex:1 1 auto !important; }
+  .currency-toggle{ order:2 !important; }
+  .theme-toggle{ order:3 !important; }
+  .search-wrap{ order:4 !important; flex:1 1 100% !important; width:100% !important; }
+  .trip-purpose{
+    order:5 !important;
+    flex:1 1 100% !important;
+    overflow-x:auto !important;
+    scrollbar-width:none !important;
+  }
+  .trip-purpose button,
+  .trip-purpose-label{ flex-shrink:0 !important; }
+  .map-viewport{ height:30vh !important; }
+}
+</style>
+
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     crossorigin="">
