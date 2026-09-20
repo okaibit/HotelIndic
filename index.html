@@ -642,6 +642,62 @@ header{
   flex:1;
   display:flex;
   min-height:0;
+  position:relative;
+}
+
+.view-toggle{
+  display:none;
+}
+
+@media (max-width: 600px){
+  .view-toggle{
+    position:absolute;
+    left:50%;
+    bottom:18px;
+    transform:translateX(-50%);
+    z-index:1000;
+    display:flex;
+    gap:2px;
+    padding:3px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:var(--bg-panel);
+    box-shadow:0 4px 14px rgba(0,0,0,.14);
+  }
+}
+
+.view-toggle button{
+  border:0;
+  background:transparent;
+  color:var(--ink-soft);
+  padding:7px 16px;
+  border-radius:999px;
+  font:600 12px var(--font-ui);
+  cursor:pointer;
+}
+
+.view-toggle button.active{
+  background:var(--ink);
+  color:var(--bg-panel);
+}
+
+.main.view-list .map-viewport{
+  display:none;
+}
+
+.main.view-list .list-panel{
+  display:block;
+  width:100%;
+  height:100%;
+}
+
+.main.view-map .map-viewport{
+  display:block;
+  width:100%;
+}
+
+.main.view-map .list-panel{
+  display:none;
 }
 
 /* ---- real world map ---- */
@@ -1625,6 +1681,11 @@ header{
       </div>
     </div>
     <div class="list-panel" id="listPanel"></div>
+
+    <div class="view-toggle" id="viewToggle" aria-label="Choose view">
+      <button type="button" id="mapViewBtn" class="active">Map</button>
+      <button type="button" id="listViewBtn">List</button>
+    </div>
 
   </div>
 
@@ -3654,9 +3715,32 @@ btnLight.addEventListener("click", ()=>setTheme("light"));
 btnDark.addEventListener("click", ()=>setTheme("dark"));
 try{
   const saved = localStorage.getItem("hm-theme");
-  if(saved){ document.documentElement.setAttribute("data-theme", saved); }
+
+  if(saved){
+    document.documentElement.setAttribute("data-theme", saved);
+  }else{
+    const hour = new Date().getHours();
+    const automaticTheme = hour >= 6 && hour < 18 ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", automaticTheme);
+  }
 }catch(e){}
+
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyThemeButtons);
+
+setInterval(() => {
+  try{
+    if(localStorage.getItem("hm-theme")) return;
+
+    const hour = new Date().getHours();
+    const automaticTheme = hour >= 6 && hour < 18 ? "light" : "dark";
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+
+    if(currentTheme !== automaticTheme){
+      document.documentElement.setAttribute("data-theme", automaticTheme);
+      applyThemeButtons();
+    }
+  }catch(e){}
+}, 60000);
 
 /* ============================= DOWNLOAD ============================= */
 (async function setupDownload(){
@@ -3686,9 +3770,30 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", app
 })();
 
 /* ============================= INIT ============================= */
+function setViewMode(mode){
+  const main = document.querySelector(".main");
+  const mapBtn = document.getElementById("mapViewBtn");
+  const listBtn = document.getElementById("listViewBtn");
+
+  if(!main) return;
+
+  const isList = mode === "list";
+
+  main.classList.toggle("view-list", isList);
+  main.classList.toggle("view-map", !isList);
+
+  mapBtn?.classList.toggle("active", !isList);
+  listBtn?.classList.toggle("active", isList);
+
+}
+
+document.getElementById("mapViewBtn")?.addEventListener("click", () => setViewMode("map"));
+document.getElementById("listViewBtn")?.addEventListener("click", () => setViewMode("list"));
+
 buildMapArt();
 applyThemeButtons();
 renderList();
+setViewMode("map");
 window.addEventListener("resize", ()=>{ resetView(); });
 requestAnimationFrame(resetView);
 
