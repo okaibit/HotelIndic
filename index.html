@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style>/* launch-fixes */
+.rating-row{display:none !important;}
+#requestReviewBtn{display:none !important;}
+</style>
   <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
   (function () {
       var script = document.createElement("script");
@@ -3595,7 +3599,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
     console.error("HotelIndice search failed:", error);
 
     state.liveApiResults = false;
-    state.parsedQuery = null;
+    state.parsedQuery = parseQuery(state.query);
 
     const resultCount = document.getElementById("resultCount");
 
