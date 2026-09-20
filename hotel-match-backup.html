@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hotel Match — Lagos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+  --font-ui: 'Space Grotesk', system-ui, sans-serif;
+  --font-display: 'Newsreader', Georgia, serif;
+
+  /* day palette (default) */
+  --bg: #E3DCC3;
+  --bg-panel: #EDE7D3;
+  --bg-card: #F5F1E4;
+  --water: #1F6F72;
+  --water-2: #2C8A8D;
+  --land: #CDBF98;
+  --land-2: #D9CCA6;
+  --ink: #1B2A2E;
+  --ink-soft: #4B5A57;
+  --line: rgba(27,42,46,0.14);
+  --amber: #C98A00;
+  --amber-glow: #F2B705;
+  --coral: #D14B32;
+  --coral-soft: rgba(209,75,50,0.14);
+  --good: #2C7A4B;
+  --warn: #B4741A;
+  --shadow: 0 12px 28px rgba(27,42,46,0.16);
+  --pin-scale: 1;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg: #0E1B22;
+    --bg-panel: #13232B;
+    --bg-card: #172A32;
+    --water: #0A2F38;
+    --water-2: #0F3B45;
+    --land: #2A2118;
+    --land-2: #33291D;
+    --ink: #EDE6D2;
+    --ink-soft: #AEBDBA;
+    --line: rgba(237,230,210,0.14);
+    --amber: #F2B705;
+    --amber-glow: #FFD86B;
+    --coral: #F0785C;
+    --coral-soft: rgba(240,120,92,0.16);
+    --good: #6FCB92;
+    --warn: #F2B705;
+    --shadow: 0 12px 32px rgba(0,0,0,0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg: #0E1B22;
+  --bg-panel: #13232B;
+  --bg-card: #172A32;
+  --water: #0A2F38;
+  --water-2: #0F3B45;
+  --land: #2A2118;
+  --land-2: #33291D;
+  --ink: #EDE6D2;
+  --ink-soft: #AEBDBA;
+  --line: rgba(237,230,210,0.14);
+  --amber: #F2B705;
+  --amber-glow: #FFD86B;
+  --coral: #F0785C;
+  --coral-soft: rgba(240,120,92,0.16);
+  --good: #6FCB92;
+  --warn: #F2B705;
+  --shadow: 0 12px 32px rgba(0,0,0,0.5);
+  color-scheme: dark;
+}
+:root[data-theme="light"]{
+  --bg: #E3DCC3;
+  --bg-panel: #EDE7D3;
+  --bg-card: #F5F1E4;
+  --water: #1F6F72;
+  --water-2: #2C8A8D;
+  --land: #CDBF98;
+  --land-2: #D9CCA6;
+  --ink: #1B2A2E;
+  --ink-soft: #4B5A57;
+  --line: rgba(27,42,46,0.14);
+  --amber: #C98A00;
+  --amber-glow: #F2B705;
+  --coral: #D14B32;
+  --coral-soft: rgba(209,75,50,0.14);
+  --good: #2C7A4B;
+  --warn: #B4741A;
+  --shadow: 0 12px 28px rgba(27,42,46,0.16);
+  color-scheme: light;
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--ink);
+  transition: background 0.4s ease, color 0.4s ease;
+}
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ============================= SHELL ============================= */
+.app{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+}
+
+/* ---- header ---- */
+header{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:14px 20px;
+  border-bottom:1px solid var(--line);
+  background: var(--bg-panel);
+  flex-shrink:0;
+}
+.wordmark{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-family: var(--font-display);
+  font-size:21px;
+  font-weight:600;
+  letter-spacing:0.2px;
+  white-space:nowrap;
+}
+.wordmark small{
+  font-family: var(--font-ui);
+  font-size:12px;
+  font-weight:500;
+  color: var(--ink-soft);
+  border-left:1px solid var(--line);
+  padding-left:8px;
+}
+.search-wrap{
+  flex:1;
+  min-width:0;
+  position:relative;
+}
+.search-wrap input{
+  width:100%;
+  font-family: var(--font-ui);
+  font-size:14px;
+  padding:10px 14px 10px 38px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background: var(--bg-card);
+  color: var(--ink);
+  outline:none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.search-wrap input::placeholder{ color: var(--ink-soft); }
+.search-wrap input:focus{
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px var(--coral-soft);
+}
+.search-wrap svg{
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  width:16px; height:16px; color: var(--ink-soft); pointer-events:none;
+}
+.search-clear{
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--ink-soft);
+  font-size:12px; padding:6px 8px; display:none; font-family:var(--font-ui);
+}
+.search-clear.show{ display:block; }
+
+.theme-toggle{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background: var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:4px;
+  cursor:pointer;
+}
+.theme-toggle button{
+  border:none; background:none; cursor:pointer;
+  width:32px; height:32px; border-radius:999px;
+  display:flex; align-items:center; justify-content:center;
+  color: var(--ink-soft);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.theme-toggle button.active{
+  background: var(--ink);
+  color: var(--bg-panel);
+}
+.theme-toggle svg{ width:16px; height:16px; }
+
+/* ---- filter bar ---- */
+.filterbar{
+  display:flex;
+  align-items:center;
+  gap:22px;
+  padding:12px 20px;
+  border-bottom:1px solid var(--line);
+  background: var(--bg-panel);
+  flex-shrink:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.filterbar::-webkit-scrollbar{display:none;}
+.filter-group{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  flex-shrink:0;
+}
+.filter-label{
+  font-size:11px;
+  color: var(--ink-soft);
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  min-width:140px;
+}
+.filter-label b{ color: var(--ink); font-weight:600; }
+
+.dual-slider{
+  position:relative;
+  width:150px;
+  height:20px;
+}
+.dual-slider .track{
+  position:absolute; top:9px; left:0; right:0; height:2px;
+  background: var(--line); border-radius:2px;
+}
+.dual-slider .fill{
+  position:absolute; top:9px; height:2px;
+  background: var(--coral); border-radius:2px;
+}
+.dual-slider input[type=range]{
+  position:absolute; top:0; left:0; width:100%; height:20px;
+  margin:0; background:none; -webkit-appearance:none; appearance:none;
+  pointer-events:none;
+}
+.dual-slider input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; pointer-events:all;
+  width:14px; height:14px; border-radius:50%;
+  background: var(--bg-card);
+  border:2px solid var(--coral);
+  cursor:pointer; margin-top:0px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.dual-slider input[type=range]::-moz-range-thumb{
+  pointer-events:all;
+  width:14px; height:14px; border-radius:50%;
+  background: var(--bg-card);
+  border:2px solid var(--coral);
+  cursor:pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.dual-slider input[type=range]::-webkit-slider-runnable-track{ background:none; }
+
+.dropdown-btn{
+  font-family: var(--font-ui);
+  font-size:12.5px;
+  padding:9px 14px;
+  border-radius:9px;
+  border:1px solid var(--line);
+  background: var(--bg-card);
+  color: var(--ink);
+  cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+  white-space:nowrap;
+}
+.dropdown-btn:hover{ border-color: var(--coral); }
+.dropdown-btn svg{ width:12px; height:12px; opacity:0.6; }
+.dropdown-btn .count{
+  background: var(--coral); color:#fff;
+  font-size:10px; font-weight:700; border-radius:999px;
+  width:16px; height:16px; display:flex; align-items:center; justify-content:center;
+}
+
+.dropdown-panel{
+  position:fixed;
+  z-index:60;
+  background: var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow: var(--shadow);
+  padding:10px;
+  min-width:220px;
+  display:none;
+}
+.dropdown-panel.open{ display:block; }
+.amenity-item{
+  display:flex; align-items:center; gap:9px;
+  padding:7px 8px; border-radius:7px; cursor:pointer;
+  font-size:13px;
+}
+.amenity-item:hover{ background: var(--bg-panel); }
+.amenity-item input{ accent-color: var(--coral); }
+.amenity-item.featured{
+  background: var(--coral-soft);
+  align-items:flex-start;
+  margin-bottom:4px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--line);
+  border-radius:7px 7px 0 0;
+}
+.amenity-item .item-copy{ display:flex; flex-direction:column; gap:2px; }
+.amenity-item .item-sub{ font-size:10.5px; color: var(--ink-soft); font-weight:400; }
+.amenity-item input{ margin-top:2px; }
+
+.room-row{
+  margin-top:10px;
+  font-size:12px;
+  color: var(--ink-soft);
+  line-height:1.6;
+}
+.room-row .room-item{ color: var(--ink); }
+.room-row .fam-badge{
+  display:inline-flex; align-items:center; gap:3px;
+  font-size:10px; font-weight:600;
+  color: var(--coral);
+  background: var(--coral-soft);
+  padding:1px 6px; border-radius:999px;
+  margin-left:4px;
+}
+.room-row .fam-badge svg{ width:9px; height:9px; }
+
+.sort-item{
+  padding:8px 10px; border-radius:7px; cursor:pointer; font-size:13px;
+}
+.sort-item:hover{ background: var(--bg-panel); }
+.sort-item.active{ color: var(--coral); font-weight:600; }
+
+.reset-btn{
+  font-family: var(--font-ui);
+  font-size:12px;
+  color: var(--ink-soft);
+  background:none;
+  border:none;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:2px;
+  flex-shrink:0;
+  padding:4px;
+}
+.reset-btn:hover{ color: var(--coral); }
+
+.result-count{
+  font-size:12px; color: var(--ink-soft); flex-shrink:0; margin-left:auto; white-space:nowrap;
+}
+
+/* ============================= MAIN SPLIT ============================= */
+.main{
+  flex:1;
+  display:flex;
+  min-height:0;
+}
+
+/* ---- map ---- */
+.map-viewport{
+  position:relative;
+  width:52%;
+  min-width:320px;
+  overflow:hidden;
+  background: var(--water);
+  flex-shrink:0;
+}
+.map-world{
+  position:absolute;
+  top:0; left:0;
+  width:1000px;
+  height:800px;
+  transform-origin: 0 0;
+  cursor:grab;
+  --zoom: 1;
+}
+.map-world.dragging{ cursor:grabbing; }
+.map-world svg{ position:absolute; top:0; left:0; width:1000px; height:800px; display:block; }
+
+.pin{
+  position:absolute;
+  transform: translate(-50%, -100%) scale(calc(1 / var(--zoom, 1)));
+  transform-origin: bottom center;
+  cursor:pointer;
+  z-index:5;
+}
+.pin.dim{ opacity:0.28; }
+.pin.active{ z-index:20; }
+.pin-badge{
+  min-width:34px;
+  height:26px;
+  padding:0 8px;
+  border-radius:8px 8px 8px 3px;
+  background: var(--bg-card);
+  border:1.5px solid var(--coral);
+  color: var(--ink);
+  font-size:11px;
+  font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  transition: transform 0.12s ease;
+}
+.pin:hover .pin-badge, .pin.active .pin-badge{
+  transform: scale(1.12);
+  background: var(--coral);
+  color:#fff;
+}
+.pin-stem{
+  width:2px; height:8px; background: var(--coral); margin:0 auto;
+}
+
+.map-controls{
+  position:absolute; right:14px; bottom:14px; z-index:30;
+  display:flex; flex-direction:column; gap:6px;
+}
+.map-controls button{
+  width:34px; height:34px; border-radius:9px;
+  background: var(--bg-card); border:1px solid var(--line);
+  color: var(--ink); font-size:16px; cursor:pointer;
+  box-shadow: var(--shadow);
+  display:flex; align-items:center; justify-content:center;
+}
+.map-controls button:hover{ border-color: var(--coral); }
+
+.map-legend{
+  position:absolute; left:14px; top:14px; z-index:30;
+  background: var(--bg-card); border:1px solid var(--line);
+  border-radius:9px; padding:8px 12px;
+  font-size:11px; color: var(--ink-soft);
+  box-shadow: var(--shadow);
+  max-width:190px;
+  line-height:1.5;
+}
+.map-note{
+  position:absolute; left:14px; bottom:10px; z-index:30;
+  font-size:10.5px; color: var(--ink-soft);
+  opacity:0.7;
+}
+
+/* ---- list ---- */
+.list-panel{
+  flex:1;
+  min-width:0;
+  overflow-y:auto;
+  background: var(--bg);
+  padding:16px;
+  scroll-behavior:smooth;
+}
+.empty-state{
+  text-align:center; padding:60px 20px; color: var(--ink-soft);
+}
+.empty-state svg{ width:36px; height:36px; margin-bottom:12px; opacity:0.5; }
+
+.card{
+  background: var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  scroll-margin-top:12px;
+}
+.card:hover, .card.linked{
+  border-color: var(--coral);
+  box-shadow: var(--shadow);
+}
+.card-top{
+  display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+}
+.card-title{
+  font-family: var(--font-display);
+  font-size:19px;
+  font-weight:600;
+  line-height:1.25;
+}
+.card-sub{
+  font-size:12.5px; color: var(--ink-soft); margin-top:3px;
+}
+.score-chip{
+  flex-shrink:0;
+  text-align:center;
+  background: var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:6px 10px;
+  min-width:56px;
+}
+.score-chip .num{ font-size:17px; font-weight:700; line-height:1; }
+.score-chip .lbl{ font-size:9.5px; color: var(--ink-soft); margin-top:2px; }
+.score-chip.na .num{ font-size:11px; color: var(--ink-soft); }
+
+.rating-row{
+  display:flex; gap:6px; margin-top:9px; flex-wrap:wrap;
+}
+.rating-pill{
+  font-size:10.5px;
+  padding:3px 8px;
+  border-radius:999px;
+  background: var(--bg-panel);
+  color: var(--ink-soft);
+  border:1px solid var(--line);
+}
+
+.tag-row{
+  display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;
+}
+.tag{
+  font-size:11.5px;
+  padding:4px 9px;
+  border-radius:7px;
+  background: var(--bg-panel);
+  color: var(--ink);
+  display:flex; align-items:center; gap:4px;
+}
+.tag.good{ color: var(--good); }
+.tag.warn{ color: var(--warn); }
+.tag svg{ width:11px; height:11px; }
+
+.price-row{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+}
+.price{
+  font-size:14px;
+}
+.price b{ font-size:16px; }
+.price .per{ font-size:11px; color: var(--ink-soft); }
+.card-actions{ display:flex; gap:8px; }
+.btn-ghost{
+  font-family: var(--font-ui);
+  font-size:12.5px; font-weight:600;
+  padding:8px 13px;
+  border-radius:8px;
+  border:1px solid var(--line);
+  background:none;
+  color: var(--ink);
+  cursor:pointer;
+}
+.btn-ghost:hover{ border-color: var(--ink); }
+.btn-primary{
+  font-family: var(--font-ui);
+  font-size:12.5px; font-weight:600;
+  padding:8px 15px;
+  border-radius:8px;
+  border:none;
+  background: var(--coral);
+  color:#fff;
+  cursor:pointer;
+}
+.btn-primary:hover{ filter:brightness(1.06); }
+
+.why-panel{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+  display:none;
+  font-size:13px;
+  line-height:1.55;
+}
+.why-panel.open{ display:block; }
+.why-lede{ color: var(--ink); margin-bottom:10px; }
+.req-list{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px;}
+.req-item{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; }
+.req-item svg{ width:14px; height:14px; flex-shrink:0; margin-top:1px; }
+.req-item.met svg{ color: var(--good); }
+.req-item.partial svg{ color: var(--warn); }
+.req-item.not svg{ color: var(--coral); }
+.caveat{
+  font-size:12.5px;
+  color: var(--ink-soft);
+  background: var(--bg-panel);
+  border-left:2.5px solid var(--warn);
+  padding:7px 10px;
+  border-radius:0 7px 7px 0;
+  margin-top:6px;
+}
+.caveat b{ color: var(--ink); font-weight:600; }
+
+/* ============================= RESPONSIVE ============================= */
+@media (max-width: 860px){
+  header{ flex-wrap:wrap; }
+  .wordmark small{ display:none; }
+  .theme-toggle{ order:1; }
+  .search-wrap{ order:2; width:100%; flex-basis:100%; }
+  .main{ flex-direction:column; }
+  .map-viewport{ width:100%; height:38vh; min-width:0; flex-shrink:0; }
+  .list-panel{ flex:1; }
+  .filterbar{ gap:14px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="wordmark">Hotel Match <small>Lagos</small></div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="nlSearch" type="text" placeholder="Describe your trip — “family of 4, pool, breakfast, under ₦150,000” — or search by name" autocomplete="off">
+      <button class="search-clear" id="searchClear">Clear</button>
+    </div>
+    <div class="theme-toggle" id="themeToggle" role="group" aria-label="Day or night browsing">
+      <button id="btnLight" aria-label="Day">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
+      </button>
+      <button id="btnDark" aria-label="Night">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a7 7 0 0 0 10.8 10.8Z"/></svg>
+      </button>
+    </div>
+    <button class="dropdown-btn" id="downloadBtn" style="display:none;" aria-label="Download this page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+      <span id="downloadLabel">Download</span>
+    </button>
+  </header>
+
+  <div class="filterbar">
+    <div class="filter-group">
+      <div class="filter-label"><span>Price / night</span><b id="priceLabel">—</b></div>
+      <div class="dual-slider" id="priceSlider">
+        <div class="track"></div><div class="fill"></div>
+        <input type="range" id="priceMin" min="0" max="400000" step="5000">
+        <input type="range" id="priceMax" min="0" max="400000" step="5000">
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label"><span>Score</span><b id="scoreLabel">—</b></div>
+      <div class="dual-slider" id="scoreSlider">
+        <div class="track"></div><div class="fill"></div>
+        <input type="range" id="scoreMin" min="0" max="100" step="1">
+        <input type="range" id="scoreMax" min="0" max="100" step="1">
+      </div>
+    </div>
+
+    <button class="dropdown-btn" id="amenityBtn">
+      Amenities <span class="count" id="amenityCount" style="display:none">0</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <button class="dropdown-btn" id="roomTypeBtn">
+      Room type <span class="count" id="roomTypeCount" style="display:none">0</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <button class="dropdown-btn" id="sortBtn">
+      Sort: <span id="sortLabel">Best match</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <button class="reset-btn" id="resetBtn">Reset filters</button>
+    <div class="result-count" id="resultCount"></div>
+  </div>
+
+  <div class="main">
+    <div class="map-viewport" id="mapViewport">
+      <div class="map-world" id="mapWorld">
+        <svg id="mapSvg" viewBox="0 0 1000 800"></svg>
+        <div id="pinLayer"></div>
+      </div>
+      <div class="map-legend" id="mapLegend">Lagos, Nigeria — stylized map, not to scale. Drag to pan, scroll to zoom.</div>
+      <div class="map-controls">
+        <button id="zoomIn" aria-label="Zoom in">+</button>
+        <button id="zoomOut" aria-label="Zoom out">–</button>
+        <button id="zoomReset" aria-label="Reset view">⟲</button>
+      </div>
+      <div class="map-note">Illustrated for browsing, not navigation</div>
+    </div>
+    <div class="list-panel" id="listPanel"></div>
+  </div>
+
+  <div class="dropdown-panel" id="amenityPanel"></div>
+  <div class="dropdown-panel" id="roomTypePanel"></div>
+  <div class="dropdown-panel" id="sortPanel">
+    <div class="sort-item active" data-sort="match">Best match</div>
+    <div class="sort-item" data-sort="price_asc">Price: low to high</div>
+    <div class="sort-item" data-sort="price_desc">Price: high to low</div>
+    <div class="sort-item" data-sort="newest">Newest built</div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================= DATA =============================
+   Seeded from seed-lagos.json. Synthetic fixture data — every
+   property here is invented for prototyping and carries source
+   "seed"; none of it describes a real hotel. */
+const AMENITY_LABELS = {
+  pool:"Pool", pool_heated:"Heated pool", gym:"Gym", spa:"Spa",
+  restaurant:"Restaurant", wifi:"Wi-Fi", wifi_free:"Free Wi-Fi",
+  breakfast_included:"Breakfast included", breakfast_available:"Breakfast available",
+  parking:"Parking", parking_free:"Free parking", air_conditioning:"Air conditioning",
+  backup_generator:"24h generator", gated_compound:"Gated compound",
+  security_24h:"24h security", borehole_water:"Borehole water",
+  airport_shuttle:"Airport shuttle", kids_club:"Kids' club",
+  childrens_pool:"Children's pool", cot_available:"Cot available",
+  beach_access:"Beach access", meeting_rooms:"Meeting rooms", work_desk:"Work desk"
+};
+const FILTERABLE_AMENITIES = ["pool","wifi_free","breakfast_included","parking_free",
+  "backup_generator","gated_compound","gym","kids_club","beach_access"];
+
+const HOTELS = [
+  {id:"seed-lag-001", name:"Harmattan House Ikoyi", neighborhood:"Ikoyi", kind:"Boutique hotel",
+   lat:6.4498, lng:3.4342, yearBuilt:2016, compositeScore:76,
+   price:{currency:"₦", low:72000, typical:89000},
+   ratings:[["google",4.4,5],["booking",8.6,10]],
+   amenities:{pool:{present:true,confidence:"verified",detail:"Outdoor, 14m"}, wifi_free:{present:true,confidence:"corroborated"},
+     breakfast_included:{present:true,confidence:"corroborated",detail:"07:00–10:30"}, parking_free:{present:true,confidence:"claimed"},
+     backup_generator:{present:true,confidence:"verified",detail:"24h, automatic"}, gated_compound:{present:true,confidence:"verified"},
+     gym:{present:false,confidence:"corroborated"}, kids_club:{present:false,confidence:"claimed"}},
+   signals:{wifi_reliability:{score:61,polarized:true,trend:"declining"}, quietness:{score:88,polarized:false},
+     cleanliness:{score:84,polarized:false}, power_reliability:{score:91,polarized:false},
+     family_suitability:{score:70,polarized:false}, breakfast_quality:{score:73,polarized:false}},
+   rooms:[
+     {name:"Courtyard King", layout:"standard", sleeps:2, limited:false, beds:[{type:"king",count:1}]},
+     {name:"Garden Family Suite", layout:"one_bedroom", sleeps:4, limited:true, beds:[{type:"king",count:1},{type:"sofa_bed",count:1}]}
+   ],
+   dataCompleteness:0.86},
+
+  {id:"seed-lag-002", name:"The Oniru Strand", neighborhood:"Oniru", kind:"Resort",
+   lat:6.4281, lng:3.4528, yearBuilt:2019, compositeScore:79,
+   price:{currency:"₦", low:145000, typical:182000},
+   ratings:[["google",4.5,5],["booking",8.9,10],["tripadvisor",4.0,5]],
+   amenities:{pool:{present:true,confidence:"verified",detail:"Two outdoor pools"}, childrens_pool:{present:true,confidence:"verified"},
+     beach_access:{present:true,confidence:"corroborated",detail:"7 min walk"}, wifi_free:{present:true,confidence:"corroborated"},
+     breakfast_included:{present:true,confidence:"verified",detail:"06:30–11:00"}, kids_club:{present:true,confidence:"claimed",detail:"Weekends only"},
+     parking_free:{present:true,confidence:"verified"}, backup_generator:{present:true,confidence:"corroborated"},
+     gym:{present:true,confidence:"verified"}},
+   signals:{wifi_reliability:{score:82,polarized:false}, quietness:{score:48,polarized:true,trend:"declining"},
+     family_suitability:{score:92,polarized:false}, breakfast_quality:{score:86,polarized:false},
+     value_for_money:{score:64,polarized:false}, power_reliability:{score:88,polarized:false}},
+   rooms:[
+     {name:"Deluxe Twin", layout:"standard", sleeps:4, limited:false, beds:[{type:"double",count:2}]},
+     {name:"Two-Bedroom Ocean Suite", layout:"two_bedroom", sleeps:5, limited:false, beds:[{type:"king",count:1},{type:"single",count:2}]}
+   ],
+   dataCompleteness:0.93},
+
+  {id:"seed-lag-003", name:"Lekki Court Residences", neighborhood:"Lekki Phase 1", kind:"Serviced apartments",
+   lat:6.4408, lng:3.4721, yearBuilt:2021, compositeScore:81,
+   price:{currency:"₦", low:98000, typical:125000},
+   ratings:[["google",4.6,5]],
+   amenities:{pool:{present:true,confidence:"verified",detail:"Rooftop, shared"}, wifi_free:{present:true,confidence:"verified",detail:"Fibre"},
+     breakfast_included:{present:false,confidence:"corroborated"}, parking_free:{present:true,confidence:"verified"},
+     backup_generator:{present:true,confidence:"verified",detail:"24h"}, borehole_water:{present:true,confidence:"claimed"},
+     gated_compound:{present:true,confidence:"verified"}, security_24h:{present:true,confidence:"verified"},
+     work_desk:{present:true,confidence:"verified"}, gym:{present:true,confidence:"disputed"}},
+   signals:{wifi_reliability:{score:90,polarized:false}, quietness:{score:76,polarized:false},
+     power_reliability:{score:94,polarized:false}, checkin_friction:{score:55,polarized:true},
+     location_convenience:{score:58,polarized:false}},
+   rooms:[
+     {name:"Two-Bedroom Apartment", layout:"two_bedroom", sleeps:4, limited:false, beds:[{type:"queen",count:1},{type:"single",count:2}]},
+     {name:"Three-Bedroom Apartment", layout:"apartment", sleeps:6, limited:true, beds:[{type:"queen",count:2},{type:"single",count:2}]}
+   ],
+   dataCompleteness:0.74},
+
+  {id:"seed-lag-004", name:"Ikeja GRA Parkview Hotel", neighborhood:"Ikeja GRA", kind:"Hotel",
+   lat:6.5793, lng:3.3506, yearBuilt:2009, compositeScore:60,
+   price:{currency:"₦", low:46000, typical:58000},
+   ratings:[["google",4.0,5],["booking",7.8,10]],
+   amenities:{pool:{present:false,confidence:"corroborated"}, wifi_free:{present:true,confidence:"claimed"},
+     breakfast_included:{present:true,confidence:"claimed",detail:"07:00–10:00"}, airport_shuttle:{present:true,confidence:"verified",detail:"Free"},
+     parking_free:{present:true,confidence:"verified"}, backup_generator:{present:true,confidence:"claimed",detail:"Hours unconfirmed"},
+     restaurant:{present:true,confidence:"verified"}, meeting_rooms:{present:true,confidence:"verified"}},
+   signals:{wifi_reliability:{score:44,polarized:false,trend:"declining"}, quietness:{score:52,polarized:true},
+     cleanliness:{score:66,polarized:false}, value_for_money:{score:81,polarized:false},
+     power_reliability:{score:62,polarized:true}},
+   rooms:[
+     {name:"Standard Double", layout:"standard", sleeps:2, limited:false, beds:[{type:"double",count:1}]},
+     {name:"Executive Room", layout:"standard", sleeps:2, limited:false, beds:[{type:"king",count:1}]}
+   ],
+   dataCompleteness:0.68},
+
+  {id:"seed-lag-005", name:"Victoria Island Meridian Suites", neighborhood:"Victoria Island", kind:"Hotel · Meridian Collection",
+   lat:6.4281, lng:3.4219, yearBuilt:2013, compositeScore:85,
+   price:{currency:"₦", low:310000, typical:395000},
+   ratings:[["google",4.7,5],["booking",9.1,10],["tripadvisor",4.5,5]],
+   amenities:{pool:{present:true,confidence:"verified",detail:"Rooftop, heated"}, spa:{present:true,confidence:"verified"},
+     gym:{present:true,confidence:"verified"}, wifi_free:{present:true,confidence:"verified"},
+     breakfast_available:{present:true,confidence:"verified",detail:"₦18,000pp, not included"}, breakfast_included:{present:false,confidence:"corroborated"},
+     parking_free:{present:false,confidence:"corroborated"}, backup_generator:{present:true,confidence:"verified",detail:"24h, dual redundancy"},
+     meeting_rooms:{present:true,confidence:"verified"}, kids_club:{present:false,confidence:"corroborated"}},
+   signals:{wifi_reliability:{score:93,polarized:false}, quietness:{score:71,polarized:false},
+     cleanliness:{score:91,polarized:false}, staff_service:{score:88,polarized:false},
+     value_for_money:{score:49,polarized:false,trend:"declining"}, family_suitability:{score:54,polarized:false},
+     power_reliability:{score:97,polarized:false}},
+   rooms:[
+     {name:"Superior King", layout:"standard", sleeps:2, limited:false, beds:[{type:"king",count:1}]},
+     {name:"Connecting Superior Rooms", layout:"connecting_rooms", sleeps:6, limited:true, beds:[{type:"king",count:1},{type:"double",count:2}]}
+   ],
+   dataCompleteness:0.96},
+
+  {id:"seed-lag-006", name:"Yaba Station Guesthouse", neighborhood:"Yaba", kind:"Guesthouse",
+   lat:6.5095, lng:3.3711, yearBuilt:null, compositeScore:null,
+   price:{currency:"₦", low:24000, typical:31000},
+   ratings:[["google",3.8,5]],
+   amenities:{wifi:{present:true,confidence:"claimed"}, air_conditioning:{present:true,confidence:"claimed"},
+     parking:{present:true,confidence:"claimed"}, pool:{present:false,confidence:"unknown"},
+     backup_generator:{present:true,confidence:"claimed",detail:"Evenings only, per listing"}},
+   signals:{value_for_money:{score:74,polarized:false}, cleanliness:{score:58,polarized:true}},
+   rooms:[
+     {name:"Double Room", layout:"standard", sleeps:2, limited:false, beds:[{type:"double",count:1}]}
+   ],
+   dataCompleteness:0.31}
+];
+
+/* ============================= ROOM CLASSIFICATION =============================
+   "Family Room" is a bed-configuration classification, not a layout label:
+   one king (or queen) bed plus either two single beds or a sofa bed. It cuts
+   across layouts — a one-bedroom suite and a two-bedroom apartment can both
+   qualify — which is why it's computed rather than tagged by hand. */
+function bedCount(beds, type){ const b = beds.find(x=>x.type===type); return b ? b.count : 0; }
+function classifyFamilyRoom(beds){
+  const bigBed = bedCount(beds,"king") + bedCount(beds,"queen");
+  const singles = bedCount(beds,"single");
+  const sofa = bedCount(beds,"sofa_bed");
+  return bigBed >= 1 && (singles >= 2 || sofa >= 1);
+}
+HOTELS.forEach(h=>{
+  h.rooms.forEach(r=>{ r.isFamilyRoom = classifyFamilyRoom(r.beds || []); });
+  h.hasFamilyRoom = h.rooms.some(r=>r.isFamilyRoom && !r.limited);
+  h.hasFamilyRoomLimited = h.rooms.some(r=>r.isFamilyRoom);
+});
+
+const ROOM_TYPE_FILTERS = [
+  {key:"family_room", label:"Family Room", sub:"King + two singles, or king + sofa bed"},
+  {key:"one_bedroom", label:"One-bedroom suite"},
+  {key:"two_bedroom", label:"Two-bedroom"},
+  {key:"apartment", label:"Multi-bedroom apartment"},
+  {key:"connecting_rooms", label:"Connecting rooms"}
+].filter(f => f.key === "family_room" || HOTELS.some(h => h.rooms.some(r=>r.layout===f.key)));
+
+function bedSummary(beds){
+  return beds.map(b=>{
+    const label = {king:"king",queen:"queen",double:"double",single:"single",sofa_bed:"sofa bed",bunk:"bunk",futon:"futon",cot:"cot"}[b.type] || b.type;
+    return b.count > 1 ? `${b.count} ${label}s` : `1 ${label}`;
+  }).join(" + ");
+}
+
+/* ============================= STATE ============================= */
+const state = {
+  priceMin:0, priceMax:400000,
+  scoreMin:0, scoreMax:100,
+  amenities:new Set(),
+  roomTypes:new Set(),
+  sort:"match",
+  query:"",
+  parsedQuery:null,
+  activePin:null,
+  zoom:1, tx:0, ty:0
+};
+
+const fmtMoney = n => "₦" + n.toLocaleString("en-NG");
+
+/* ============================= NL PARSER =============================
+   Lightweight keyword parser — not a model call. Deterministic mapping
+   from phrases to structured requirements, in the spirit of the
+   product's "AI should not invent hotel facts" rule: this layer only
+   ever points at real amenity/signal keys already in the data. */
+function parseQuery(text){
+  const t = text.toLowerCase();
+  if(!t.trim()) return null;
+  const req = { must:[], strong:[], nice:[], sourcePhrases:{} };
+
+  const has = (...words) => words.some(w => t.includes(w));
+
+  if(has("pool","swim")) req.must.push({type:"amenity", key:"pool", label:"pool"});
+  if(has("breakfast")) req.strong.push({type:"amenity", key:"breakfast_included", altKey:"breakfast_available", label:"breakfast"});
+  if(has("wifi","wi-fi","internet","work remotely","remote work")) req.strong.push({type:"amenity", key:"wifi_free", altKey:"wifi", label:"reliable Wi-Fi"});
+  if(has("parking")) req.nice.push({type:"amenity", key:"parking_free", altKey:"parking", label:"parking"});
+  if(has("generator","power","electricity","light")) req.must.push({type:"amenity", key:"backup_generator", label:"backup power"});
+  if(has("gym","fitness")) req.nice.push({type:"amenity", key:"gym", label:"gym"});
+  if(has("beach")) req.nice.push({type:"amenity", key:"beach_access", label:"beach proximity"});
+  if(has("quiet","peaceful")) req.strong.push({type:"signal", key:"quietness", min:65, label:"a quiet stay"});
+  if(has("family room")) req.must.push({type:"family_room", label:"a family room (king + two singles or a sofa bed)"});
+  else if(has("kid","kids","child","children","family")) req.must.push({type:"capacity", sleeps:4, label:"a room for the family"});
+  if(has("secure","security","safe","safety")) req.strong.push({type:"amenity", key:"security_24h", altKey:"gated_compound", label:"strong security"});
+
+  const budgetMatch = t.match(/(?:under|below|less than|budget of)\s*(?:₦|ngn|naira)?\s*([\d,]+)(k)?/);
+  if(budgetMatch){
+    let n = parseInt(budgetMatch[1].replace(/,/g,""), 10);
+    if(budgetMatch[2]) n *= 1000;
+    req.must.push({type:"budget", max:n, label:`under ${fmtMoney(n)} per night`});
+  }
+  const adultsMatch = t.match(/(\d+)\s*adult/);
+  const kidsMatch = t.match(/(\d+)\s*(kid|child)/);
+  if(adultsMatch || kidsMatch){
+    const sleeps = (adultsMatch ? parseInt(adultsMatch[1],10) : 2) + (kidsMatch ? parseInt(kidsMatch[1],10) : 0);
+    req.must = req.must.filter(r => r.type !== "capacity");
+    req.must.push({type:"capacity", sleeps, label:`sleeping ${sleeps}`});
+  }
+
+  const total = req.must.length + req.strong.length + req.nice.length;
+  if(total === 0) return null;
+  return req;
+}
+
+function evaluateRequirement(hotel, r, weight){
+  const getAmenity = (key, altKey) => hotel.amenities[key] || (altKey && hotel.amenities[altKey]);
+  if(r.type === "amenity"){
+    const a = getAmenity(r.key, r.altKey);
+    if(!a) return {outcome:"unknown", text:`Not enough information to verify ${r.label}`};
+    if(a.present && a.confidence !== "disputed") return {outcome:"met", text:`Has ${r.label}${a.detail ? " ("+a.detail+")" : ""}`};
+    if(a.present && a.confidence === "disputed") return {outcome:"partial", text:`Lists ${r.label}, but sources disagree on the details`};
+    return {outcome:"not", text:`No ${r.label}`};
+  }
+  if(r.type === "signal"){
+    const s = hotel.signals[r.key];
+    if(!s) return {outcome:"unknown", text:`Not enough information to verify ${r.label}`};
+    if(s.score >= r.min && !s.polarized) return {outcome:"met", text:`Guests consistently rate this well for ${r.label}`};
+    if(s.score >= r.min && s.polarized) return {outcome:"partial", text:`Usually good, but opinions are mixed on ${r.label}`};
+    return {outcome:"not", text:`Guests rate this lower than typical for ${r.label}`};
+  }
+  if(r.type === "family_room"){
+    if(hotel.hasFamilyRoom) return {outcome:"met", text:"Has a family room: king + two singles or a sofa bed"};
+    if(hotel.hasFamilyRoomLimited) return {outcome:"partial", text:"Has a family-room configuration, but it's not always available"};
+    return {outcome:"not", text:"No room matches a family-room configuration"};
+  }
+  if(r.type === "capacity"){
+    const best = hotel.rooms.reduce((a,b)=> b.sleeps > a.sleeps ? b : a, {sleeps:0});
+    if(best.sleeps >= r.sleeps && !best.limited) return {outcome:"met", text:`${best.name} sleeps ${best.sleeps}`};
+    if(best.sleeps >= r.sleeps && best.limited) return {outcome:"partial", text:`${best.name} sleeps ${best.sleeps}, but availability is limited`};
+    return {outcome:"not", text:`Largest room sleeps ${best.sleeps}, short of ${r.sleeps}`};
+  }
+  if(r.type === "budget"){
+    if(hotel.price.typical <= r.max) return {outcome:"met", text:`Typical rate ${fmtMoney(hotel.price.typical)} is within budget`};
+    if(hotel.price.low <= r.max) return {outcome:"partial", text:`Lowest rooms start within budget, typical rate runs higher`};
+    return {outcome:"not", text:`Typical rate ${fmtMoney(hotel.price.typical)} is above budget`};
+  }
+  return {outcome:"unknown", text:"Not enough information to verify"};
+}
+
+function scoreAgainstQuery(hotel, pq){
+  const matches = [];
+  let score = 0, maxScore = 0;
+  const weights = {must:[pq.must,40], strong:[pq.strong,20], nice:[pq.nice,8]};
+  Object.entries(weights).forEach(([wname,[list,pts]])=>{
+    list.forEach(r=>{
+      const ev = evaluateRequirement(hotel, r, wname);
+      maxScore += pts;
+      let contribution = 0;
+      if(ev.outcome === "met") contribution = pts;
+      else if(ev.outcome === "partial") contribution = pts * 0.5;
+      else if(ev.outcome === "unknown") contribution = pts * 0.3;
+      else contribution = wname === "must" ? -pts * 0.6 : 0;
+      score += contribution;
+      matches.push({weight:wname, outcome:ev.outcome, text:ev.text});
+    });
+  });
+  const pct = maxScore > 0 ? Math.max(2, Math.min(99, Math.round((score / maxScore) * 100))) : null;
+  return {pct, matches};
+}
+
+function buildCaveats(hotel){
+  const caveats = [];
+  const wifi = hotel.signals.wifi_reliability;
+  if(wifi && wifi.polarized) caveats.push("Reliable high-speed Wi-Fi is essential for your work");
+  const quiet = hotel.signals.quietness;
+  if(quiet && quiet.score < 60) caveats.push("You need a guaranteed quiet room");
+  const power = hotel.signals.power_reliability;
+  if(power && power.polarized) caveats.push("You can't tolerate occasional power interruptions");
+  const bestRoom = hotel.rooms.reduce((a,b)=> b.sleeps > a.sleeps ? b : a, {sleeps:0});
+  if(bestRoom.limited) caveats.push(`You need all ${bestRoom.sleeps} guests in one room without confirming availability first`);
+  if(!hotel.hasFamilyRoom && hotel.hasFamilyRoomLimited) caveats.push("You need the Family Room guaranteed — it's a limited-availability room type here");
+  const disputed = Object.entries(hotel.amenities).find(([,a]) => a.confidence === "disputed");
+  if(disputed) caveats.push(`You're counting on the ${(AMENITY_LABELS[disputed[0]]||disputed[0]).toLowerCase()} being fully equipped`);
+  return caveats.slice(0,2);
+}
+
+/* ============================= MAP ============================= */
+const lats = HOTELS.map(h=>h.lat), lngs = HOTELS.map(h=>h.lng);
+const latMin = Math.min(...lats), latMax = Math.max(...lats);
+const lngMin = Math.min(...lngs), lngMax = Math.max(...lngs);
+const PAD = 130, W = 1000, H = 800;
+function project(lat, lng){
+  const latFrac = latMax > latMin ? (latMax - lat) / (latMax - latMin) : 0.5;
+  const lngFrac = lngMax > lngMin ? (lng - lngMin) / (lngMax - lngMin) : 0.5;
+  return { x: lngFrac * (W - 2*PAD) + PAD, y: latFrac * (H - 2*PAD) + PAD };
+}
+HOTELS.forEach(h => { const p = project(h.lat, h.lng); h._x = p.x; h._y = p.y; });
+
+function buildMapArt(){
+  const svg = document.getElementById("mapSvg");
+  // land blobs (rough neighborhoods) + lagoon water + roads + theme dressing
+  svg.innerHTML = `
+    <defs>
+      <radialGradient id="haze" cx="30%" cy="20%" r="70%">
+        <stop offset="0%" stop-color="var(--land-2)" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="var(--land-2)" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect x="0" y="0" width="1000" height="800" fill="var(--water)"/>
+    <ellipse cx="150" cy="150" rx="230" ry="190" fill="var(--land)"/>
+    <ellipse cx="530" cy="130" rx="260" ry="170" fill="var(--land)"/>
+    <ellipse cx="230" cy="400" rx="200" ry="150" fill="var(--land)"/>
+    <ellipse cx="580" cy="560" rx="230" ry="180" fill="var(--land)"/>
+    <ellipse cx="850" cy="600" rx="260" ry="210" fill="var(--land)"/>
+    <ellipse cx="880" cy="230" rx="150" ry="120" fill="var(--land)"/>
+    <rect x="0" y="0" width="1000" height="800" fill="url(#haze)"/>
+    <g stroke="var(--line)" stroke-width="2" fill="none" opacity="0.5">
+      <path d="M60,150 Q300,90 560,140 T950,230"/>
+      <path d="M120,420 Q380,380 600,560 T900,610"/>
+      <path d="M230,120 Q230,300 230,420"/>
+      <path d="M530,60 Q550,300 580,560"/>
+      <path d="M150,150 Q450,350 850,600"/>
+    </g>
+    <g id="skyDressing"></g>
+    <g id="labels" font-family="var(--font-ui)" font-size="13" fill="var(--ink-soft)" opacity="0.8"></g>
+  `;
+  const labels = [
+    {t:"Ikeja GRA", x:80, y:110},
+    {t:"Yaba", x:190, y:390},
+    {t:"Ikoyi", x:600, y:150},
+    {t:"Victoria Island", x:830, y:210},
+    {t:"Oniru", x:560, y:540},
+    {t:"Lekki Phase 1", x:800, y:560}
+  ];
+  const labelsG = svg.querySelector("#labels");
+  labels.forEach(l=>{
+    const el = document.createElementNS("http://www.w3.org/2000/svg","text");
+    el.setAttribute("x", l.x); el.setAttribute("y", l.y);
+    el.textContent = l.t;
+    labelsG.appendChild(el);
+  });
+  renderSkyDressing();
+}
+
+function renderSkyDressing(){
+  const g = document.getElementById("skyDressing");
+  if(!g) return;
+  const dark = isDark();
+  g.innerHTML = "";
+  if(dark){
+    // stars
+    for(let i=0;i<70;i++){
+      const cx = Math.random()*1000, cy = Math.random()*260;
+      const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      c.setAttribute("cx",cx); c.setAttribute("cy",cy);
+      c.setAttribute("r", (Math.random()*1.2+0.3).toFixed(2));
+      c.setAttribute("fill","var(--ink)"); c.setAttribute("opacity", (Math.random()*0.5+0.2).toFixed(2));
+      g.appendChild(c);
+    }
+    // generator-lit windows glowing across the land
+    for(let i=0;i<55;i++){
+      const cx = 60 + Math.random()*880, cy = 100 + Math.random()*600;
+      const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      c.setAttribute("cx",cx); c.setAttribute("cy",cy);
+      c.setAttribute("r", (Math.random()*2.2+1).toFixed(2));
+      c.setAttribute("fill","var(--amber-glow)"); c.setAttribute("opacity", (Math.random()*0.6+0.3).toFixed(2));
+      g.appendChild(c);
+    }
+  } else {
+    // soft cloud haze drifting over the lagoon
+    for(let i=0;i<8;i++){
+      const cx = Math.random()*1000, cy = Math.random()*180+30;
+      const e = document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+      e.setAttribute("cx",cx); e.setAttribute("cy",cy);
+      e.setAttribute("rx", (Math.random()*70+50).toFixed(0)); e.setAttribute("ry","14");
+      e.setAttribute("fill","#ffffff"); e.setAttribute("opacity","0.18");
+      g.appendChild(e);
+    }
+  }
+}
+
+function isDark(){
+  const attr = document.documentElement.getAttribute("data-theme");
+  if(attr === "dark") return true;
+  if(attr === "light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+function renderPins(){
+  const layer = document.getElementById("pinLayer");
+  layer.innerHTML = "";
+  HOTELS.forEach(h=>{
+    const visible = passesFilters(h);
+    const pin = document.createElement("div");
+    pin.className = "pin" + (visible ? "" : " dim") + (state.activePin === h.id ? " active" : "");
+    pin.style.left = h._x + "px";
+    pin.style.top = h._y + "px";
+    pin.dataset.id = h.id;
+    const label = h.compositeScore != null ? h.compositeScore : "—";
+    pin.innerHTML = `<div class="pin-badge">${label}</div><div class="pin-stem"></div>`;
+    pin.addEventListener("click", (e)=>{ e.stopPropagation(); focusHotel(h.id, true); });
+    layer.appendChild(pin);
+  });
+}
+
+/* pan / zoom */
+const world = document.getElementById("mapWorld");
+const viewport = document.getElementById("mapViewport");
+function applyTransform(){
+  world.style.transform = `translate(${state.tx}px, ${state.ty}px) scale(${state.zoom})`;
+  world.style.setProperty("--zoom", state.zoom);
+}
+function clampZoom(z){ return Math.max(0.55, Math.min(2.6, z)); }
+function centerOn(x, y, zoom){
+  const rect = viewport.getBoundingClientRect();
+  state.zoom = clampZoom(zoom != null ? zoom : state.zoom);
+  state.tx = rect.width/2 - x*state.zoom;
+  state.ty = rect.height/2 - y*state.zoom;
+  applyTransform();
+}
+function resetView(){ centerOn(W/2, H/2, Math.max(0.55, viewport.clientWidth/W)); }
+
+let dragging=false, dragStart={x:0,y:0}, startTxTy={x:0,y:0};
+world.addEventListener("pointerdown", e=>{
+  dragging=true; world.classList.add("dragging");
+  dragStart={x:e.clientX,y:e.clientY}; startTxTy={x:state.tx,y:state.ty};
+  world.setPointerCapture(e.pointerId);
+});
+world.addEventListener("pointermove", e=>{
+  if(!dragging) return;
+  state.tx = startTxTy.x + (e.clientX - dragStart.x);
+  state.ty = startTxTy.y + (e.clientY - dragStart.y);
+  applyTransform();
+});
+["pointerup","pointercancel"].forEach(evt=>world.addEventListener(evt, e=>{
+  dragging=false; world.classList.remove("dragging");
+}));
+viewport.addEventListener("wheel", e=>{
+  e.preventDefault();
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+  const worldX = (mx - state.tx)/state.zoom, worldY = (my - state.ty)/state.zoom;
+  const newZoom = clampZoom(state.zoom * (e.deltaY < 0 ? 1.12 : 0.89));
+  state.tx = mx - worldX*newZoom; state.ty = my - worldY*newZoom;
+  state.zoom = newZoom;
+  applyTransform();
+}, {passive:false});
+document.getElementById("zoomIn").addEventListener("click", ()=>{
+  const rect=viewport.getBoundingClientRect();
+  centerOnKeepCenter(rect, state.zoom*1.25);
+});
+document.getElementById("zoomOut").addEventListener("click", ()=>{
+  const rect=viewport.getBoundingClientRect();
+  centerOnKeepCenter(rect, state.zoom*0.8);
+});
+function centerOnKeepCenter(rect, newZoomRaw){
+  const newZoom = clampZoom(newZoomRaw);
+  const cx = rect.width/2, cy = rect.height/2;
+  const worldX = (cx - state.tx)/state.zoom, worldY = (cy - state.ty)/state.zoom;
+  state.tx = cx - worldX*newZoom; state.ty = cy - worldY*newZoom;
+  state.zoom = newZoom;
+  applyTransform();
+}
+document.getElementById("zoomReset").addEventListener("click", resetView);
+
+function focusHotel(id, fly){
+  state.activePin = id;
+  document.querySelectorAll(".pin").forEach(p=> p.classList.toggle("active", p.dataset.id===id));
+  document.querySelectorAll(".card").forEach(c=> c.classList.toggle("linked", c.dataset.id===id));
+  const card = document.querySelector(`.card[data-id="${id}"]`);
+  if(card) card.scrollIntoView({behavior:"smooth", block:"nearest"});
+  if(fly){
+    const h = HOTELS.find(x=>x.id===id);
+    if(h) centerOn(h._x, h._y, Math.max(state.zoom, 1.3));
+  }
+}
+
+/* ============================= FILTERING / SORTING ============================= */
+function passesFilters(h){
+  if(h.price.typical < state.priceMin || h.price.typical > state.priceMax) return false;
+  if(h.compositeScore != null && (h.compositeScore < state.scoreMin || h.compositeScore > state.scoreMax)) return false;
+  for(const key of state.amenities){
+    const a = h.amenities[key];
+    if(!a || !a.present) return false;
+  }
+  for(const key of state.roomTypes){
+    const match = key === "family_room"
+      ? h.rooms.some(r=>r.isFamilyRoom)
+      : h.rooms.some(r=>r.layout===key);
+    if(!match) return false;
+  }
+  if(state.query && !state.parsedQuery){
+    const q = state.query.toLowerCase();
+    if(!h.name.toLowerCase().includes(q) && !h.neighborhood.toLowerCase().includes(q)) return false;
+  }
+  return true;
+}
+
+function sortHotels(list){
+  const arr = [...list];
+  if(state.sort === "price_asc") arr.sort((a,b)=>a.price.typical-b.price.typical);
+  else if(state.sort === "price_desc") arr.sort((a,b)=>b.price.typical-a.price.typical);
+  else if(state.sort === "newest") arr.sort((a,b)=>(b.yearBuilt||0)-(a.yearBuilt||0));
+  else {
+    arr.sort((a,b)=>{
+      const av = state.parsedQuery ? (a._matchPct ?? -1) : (a.compositeScore ?? -1);
+      const bv = state.parsedQuery ? (b._matchPct ?? -1) : (b.compositeScore ?? -1);
+      return bv - av;
+    });
+  }
+  return arr;
+}
+
+/* ============================= RENDER LIST ============================= */
+const checkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>`;
+const dashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>`;
+const xIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+
+function renderList(){
+  if(state.parsedQuery){
+    HOTELS.forEach(h=>{
+      const r = scoreAgainstQuery(h, state.parsedQuery);
+      h._matchPct = r.pct; h._matches = r.matches;
+    });
+  }
+  const visible = sortHotels(HOTELS.filter(passesFilters));
+  const panel = document.getElementById("listPanel");
+  document.getElementById("resultCount").textContent = `${visible.length} of ${HOTELS.length} hotels`;
+
+  if(visible.length === 0){
+    panel.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <div>No hotels match these filters.</div>
+      <div style="font-size:12px;margin-top:4px;">Try widening the price or score range.</div>
+    </div>`;
+    renderPins();
+    return;
+  }
+
+  panel.innerHTML = visible.map(h=>{
+    const scoreVal = state.parsedQuery ? h._matchPct : h.compositeScore;
+    const scoreLbl = state.parsedQuery ? "match" : (h.compositeScore==null ? "no score" : "score");
+    const scoreHtml = scoreVal == null
+      ? `<div class="score-chip na"><div class="num">N/A</div><div class="lbl">no score</div></div>`
+      : `<div class="score-chip"><div class="num">${scoreVal}${state.parsedQuery?"%":""}</div><div class="lbl">${scoreLbl}</div></div>`;
+
+    const ratingPills = h.ratings.map(([src,val,scale])=>{
+      const norm = Math.round((val/scale)*100);
+      return `<span class="rating-pill">${src} · ${norm}</span>`;
+    }).join("");
+
+    const familyTag = h.hasFamilyRoom
+      ? `<span class="tag good">${checkIcon}Family Room</span>`
+      : h.hasFamilyRoomLimited
+        ? `<span class="tag warn">${dashIcon}Family Room (limited)</span>`
+        : "";
+    const topAmenities = (familyTag ? [familyTag] : []).concat(
+      Object.entries(h.amenities)
+        .filter(([,a])=>a.present)
+        .slice(0, h.hasFamilyRoom || h.hasFamilyRoomLimited ? 3 : 4)
+        .map(([k,a])=>`<span class="tag ${a.confidence==='disputed'?'warn':'good'}">${a.confidence==='disputed'?dashIcon:checkIcon}${AMENITY_LABELS[k]||k}</span>`)
+    ).join("");
+
+    const roomListHtml = `<div class="room-row">${h.rooms.map(r=>
+      `<span class="room-item">${r.name}</span> — sleeps ${r.sleeps}${r.beds ? ` (${bedSummary(r.beds)})` : ""}${r.isFamilyRoom ? `<span class="fam-badge">${checkIcon}Family Room</span>` : ""}`
+    ).join("<br>")}</div>`;
+
+    let whyHtml = "";
+    if(state.parsedQuery && h._matches){
+      const reqItems = h._matches.map(m=>{
+        const cls = m.outcome === "met" ? "met" : m.outcome === "partial" || m.outcome === "unknown" ? "partial" : "not";
+        const icon = m.outcome === "met" ? checkIcon : m.outcome === "not" ? xIcon : dashIcon;
+        return `<div class="req-item ${cls}">${icon}<span>${m.text}</span></div>`;
+      }).join("");
+      const metCount = h._matches.filter(m=>m.outcome==="met").length;
+      const caveats = buildCaveats(h);
+      whyHtml = `<div class="why-panel" id="why-${h.id}">
+        <div class="why-lede">Matches ${metCount} of ${h._matches.length} things you asked for.</div>
+        <div class="req-list">${reqItems}</div>
+        ${caveats.map(c=>`<div class="caveat"><b>Don't book this if:</b> ${c}</div>`).join("")}
+      </div>`;
+    } else {
+      const caveats = buildCaveats(h);
+      whyHtml = `<div class="why-panel" id="why-${h.id}">
+        <div class="why-lede">${h.dataCompleteness < 0.5 ? "Limited data on this property — treat details as provisional." : `Data completeness: ${Math.round(h.dataCompleteness*100)}%.`}</div>
+        ${caveats.length ? caveats.map(c=>`<div class="caveat"><b>Don't book this if:</b> ${c}</div>`).join("") : `<div class="caveat"><b>No notable caveats</b> found in available data.</div>`}
+      </div>`;
+    }
+
+    return `<div class="card" data-id="${h.id}">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${h.name}</div>
+          <div class="card-sub">${h.neighborhood} · ${h.kind}${h.yearBuilt?` · built ${h.yearBuilt}`:""}</div>
+        </div>
+        ${scoreHtml}
+      </div>
+      <div class="rating-row">${ratingPills}</div>
+      <div class="tag-row">${topAmenities}</div>
+      ${roomListHtml}
+      <div class="price-row">
+        <div class="price"><b>${fmtMoney(h.price.typical)}</b><span class="per"> / night, typical</span></div>
+        <div class="card-actions">
+          <button class="btn-ghost why-btn" data-id="${h.id}">Why this hotel?</button>
+          <button class="btn-primary">Check price</button>
+        </div>
+      </div>
+      ${whyHtml}
+    </div>`;
+  }).join("");
+
+  panel.querySelectorAll(".card").forEach(card=>{
+    card.addEventListener("click", (e)=>{
+      if(e.target.closest(".why-btn") || e.target.closest("button")) return;
+      focusHotel(card.dataset.id, true);
+    });
+  });
+  panel.querySelectorAll(".why-btn").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const p = document.getElementById("why-"+btn.dataset.id);
+      p.classList.toggle("open");
+    });
+  });
+
+  renderPins();
+}
+
+/* ============================= FILTER UI WIRING ============================= */
+function setupDualSlider(container, minInput, maxInput, min, max, step, stateKeys, formatFn){
+  minInput.min = min; minInput.max = max; minInput.step = step; minInput.value = min;
+  maxInput.min = min; maxInput.max = max; maxInput.step = step; maxInput.value = max;
+  const fill = container.querySelector(".fill");
+  function update(){
+    let a = parseInt(minInput.value,10), b = parseInt(maxInput.value,10);
+    if(a > b){ [a,b] = [b,a]; }
+    state[stateKeys[0]] = a; state[stateKeys[1]] = b;
+    const pctA = ((a-min)/(max-min))*100, pctB = ((b-min)/(max-min))*100;
+    fill.style.left = pctA+"%"; fill.style.width = (pctB-pctA)+"%";
+    document.getElementById(stateKeys[2]).innerHTML = formatFn(a,b);
+    renderList();
+  }
+  minInput.addEventListener("input", update);
+  maxInput.addEventListener("input", update);
+  update();
+}
+setupDualSlider(document.getElementById("priceSlider"),
+  document.getElementById("priceMin"), document.getElementById("priceMax"),
+  0, 400000, 5000, ["priceMin","priceMax","priceLabel"],
+  (a,b)=> a===0 && b===400000 ? "Any" : `${(a/1000).toFixed(0)}k–${(b/1000).toFixed(0)}k`);
+setupDualSlider(document.getElementById("scoreSlider"),
+  document.getElementById("scoreMin"), document.getElementById("scoreMax"),
+  0, 100, 1, ["scoreMin","scoreMax","scoreLabel"],
+  (a,b)=> a===0 && b===100 ? "Any" : `${a}–${b}`);
+
+/* amenity dropdown */
+const amenityPanel = document.getElementById("amenityPanel");
+amenityPanel.innerHTML = FILTERABLE_AMENITIES.map(k=>
+  `<label class="amenity-item"><input type="checkbox" value="${k}"> ${AMENITY_LABELS[k]}</label>`
+).join("");
+amenityPanel.querySelectorAll("input").forEach(cb=>{
+  cb.addEventListener("change", ()=>{
+    if(cb.checked) state.amenities.add(cb.value); else state.amenities.delete(cb.value);
+    const count = document.getElementById("amenityCount");
+    count.textContent = state.amenities.size;
+    count.style.display = state.amenities.size ? "flex" : "none";
+    renderList();
+  });
+});
+
+/* room type dropdown */
+const roomTypePanel = document.getElementById("roomTypePanel");
+roomTypePanel.innerHTML = ROOM_TYPE_FILTERS.map(f=>
+  `<label class="amenity-item${f.key==='family_room' ? ' featured':''}">
+     <input type="checkbox" value="${f.key}">
+     <span class="item-copy">${f.label}${f.sub ? `<span class="item-sub">${f.sub}</span>` : ""}</span>
+   </label>`
+).join("");
+roomTypePanel.querySelectorAll("input").forEach(cb=>{
+  cb.addEventListener("change", ()=>{
+    if(cb.checked) state.roomTypes.add(cb.value); else state.roomTypes.delete(cb.value);
+    const count = document.getElementById("roomTypeCount");
+    count.textContent = state.roomTypes.size;
+    count.style.display = state.roomTypes.size ? "flex" : "none";
+    renderList();
+  });
+});
+
+/* sort dropdown */
+const sortPanel = document.getElementById("sortPanel");
+sortPanel.querySelectorAll(".sort-item").forEach(item=>{
+  item.addEventListener("click", ()=>{
+    state.sort = item.dataset.sort;
+    sortPanel.querySelectorAll(".sort-item").forEach(i=>i.classList.remove("active"));
+    item.classList.add("active");
+    document.getElementById("sortLabel").textContent = item.textContent;
+    closeDropdowns();
+    renderList();
+  });
+});
+
+function positionDropdown(btn, panel){
+  const r = btn.getBoundingClientRect();
+  panel.style.top = (r.bottom+6)+"px";
+  panel.style.left = Math.min(r.left, window.innerWidth-240)+"px";
+}
+function closeDropdowns(){
+  amenityPanel.classList.remove("open");
+  roomTypePanel.classList.remove("open");
+  sortPanel.classList.remove("open");
+}
+document.getElementById("amenityBtn").addEventListener("click",(e)=>{
+  e.stopPropagation();
+  const willOpen = !amenityPanel.classList.contains("open");
+  closeDropdowns();
+  if(willOpen){ positionDropdown(e.currentTarget, amenityPanel); amenityPanel.classList.add("open"); }
+});
+document.getElementById("roomTypeBtn").addEventListener("click",(e)=>{
+  e.stopPropagation();
+  const willOpen = !roomTypePanel.classList.contains("open");
+  closeDropdowns();
+  if(willOpen){ positionDropdown(e.currentTarget, roomTypePanel); roomTypePanel.classList.add("open"); }
+});
+document.getElementById("sortBtn").addEventListener("click",(e)=>{
+  e.stopPropagation();
+  const willOpen = !sortPanel.classList.contains("open");
+  closeDropdowns();
+  if(willOpen){ positionDropdown(e.currentTarget, sortPanel); sortPanel.classList.add("open"); }
+});
+document.addEventListener("click", closeDropdowns);
+
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  document.getElementById("priceMin").value=0; document.getElementById("priceMax").value=400000;
+  document.getElementById("priceMin").dispatchEvent(new Event("input"));
+  document.getElementById("scoreMin").value=0; document.getElementById("scoreMax").value=100;
+  document.getElementById("scoreMin").dispatchEvent(new Event("input"));
+  state.amenities.clear();
+  amenityPanel.querySelectorAll("input").forEach(cb=>cb.checked=false);
+  document.getElementById("amenityCount").style.display="none";
+  state.roomTypes.clear();
+  roomTypePanel.querySelectorAll("input").forEach(cb=>cb.checked=false);
+  document.getElementById("roomTypeCount").style.display="none";
+  document.getElementById("nlSearch").value="";
+  document.getElementById("searchClear").classList.remove("show");
+  state.query=""; state.parsedQuery=null;
+  renderList();
+});
+
+/* search */
+const nlSearch = document.getElementById("nlSearch");
+const searchClear = document.getElementById("searchClear");
+let searchDebounce;
+nlSearch.addEventListener("input", ()=>{
+  searchClear.classList.toggle("show", nlSearch.value.length>0);
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(()=>{
+    state.query = nlSearch.value;
+    state.parsedQuery = parseQuery(nlSearch.value);
+    document.getElementById("sortLabel").textContent = state.parsedQuery ? "Best match" : "Best match";
+    renderList();
+  }, 220);
+});
+searchClear.addEventListener("click", ()=>{
+  nlSearch.value=""; searchClear.classList.remove("show");
+  state.query=""; state.parsedQuery=null; renderList();
+});
+
+/* ============================= THEME ============================= */
+const btnLight = document.getElementById("btnLight"), btnDark = document.getElementById("btnDark");
+function applyThemeButtons(){
+  const dark = isDark();
+  btnLight.classList.toggle("active", !dark);
+  btnDark.classList.toggle("active", dark);
+  renderSkyDressing();
+}
+function setTheme(mode){
+  if(mode) { document.documentElement.setAttribute("data-theme", mode); localStorage.setItem("hm-theme", mode); }
+  applyThemeButtons();
+}
+btnLight.addEventListener("click", ()=>setTheme("light"));
+btnDark.addEventListener("click", ()=>setTheme("dark"));
+try{
+  const saved = localStorage.getItem("hm-theme");
+  if(saved){ document.documentElement.setAttribute("data-theme", saved); }
+}catch(e){}
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyThemeButtons);
+
+/* ============================= DOWNLOAD ============================= */
+(async function setupDownload(){
+  const btn = document.getElementById("downloadBtn");
+  const label = document.getElementById("downloadLabel");
+  let downloads = null;
+  try{ downloads = await claude.use("downloads"); }catch(e){ downloads = null; }
+  if(!downloads){ return; } // capability unavailable in this view — leave hidden
+  btn.style.display = "flex";
+  btn.addEventListener("click", async ()=>{
+    const original = label.textContent;
+    label.textContent = "Saving…";
+    btn.disabled = true;
+    try{
+      const html = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const res = await downloads.save({ filename: "hotel-match-lagos.html", data: html });
+      label.textContent = res.status === "saved" ? "Saved" : "Sent";
+      setTimeout(()=>{ label.textContent = original; btn.disabled = false; }, 1800);
+    }catch(err){
+      if(err && err.code === "declined"){
+        label.textContent = original; btn.disabled = false; return;
+      }
+      label.textContent = "Unavailable";
+      setTimeout(()=>{ label.textContent = original; btn.disabled = false; }, 1800);
+    }
+  });
+})();
+
+/* ============================= INIT ============================= */
+buildMapArt();
+applyThemeButtons();
+renderList();
+window.addEventListener("resize", ()=>{ resetView(); });
+requestAnimationFrame(resetView);
+
+})();
+</script>
+</body>
+</html>

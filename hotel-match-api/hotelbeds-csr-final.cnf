@@ -1,0 +1,19 @@
+[req]
+default_bits = 2048
+distinguished_name = dn
+default_md = sha256
+prompt = no
+req_extensions = req_ext
+attributes = req_attributes
+
+[dn]
+O = Hotel Match
+emailAddress = workwithokai@gmail.com
+CN = Okayi-Elijah
+
+[req_ext]
+extendedKeyUsage = clientAuth
+basicConstraints = CA:FALSE
+
+[req_attributes]
+challengePassword = PwgGLlGf
