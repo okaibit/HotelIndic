@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — HotelIndice</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:680px;margin:0 auto;padding:24px 18px;line-height:1.6;color:#1B2A2E;background:#F5F1E4}
+h1{font-size:26px;margin-bottom:4px}
+h2{font-size:18px;margin-top:28px}
+a{color:#D14B32}
+small{color:#4B5A57}
+</style>
+</head>
+<body>
+<h1>Privacy Policy</h1>
+<small>Last updated: September 20, 2026</small>
+
+<p>HotelIndice ("we", "us") is a hotel discovery website. This page explains what information we handle when you use it.</p>
+
+<h2>Information we collect</h2>
+<p><b>Searches and filters.</b> What you type into the search box and the filters you choose are used to show you results. We do not require an account.</p>
+<p><b>Hotel review requests.</b> If you submit the "Request a hotel review" form, we receive your name, email, hotel name, city, message, and website (if provided), so we can respond to your request.</p>
+<p><b>Device storage.</b> Your browser stores your chosen theme (day or night) and display currency so the site remembers them on your next visit.</p>
+
+<h2>Third-party services</h2>
+<p>To work, the site loads content from other providers, which may receive your IP address and device information under their own policies:</p>
+<ul>
+<li>Map tiles from MapTiler and OpenStreetMap contributors, and the Leaflet mapping library.</li>
+<li>Fonts from Google Fonts.</li>
+<li>Currency exchange rates from open.er-api.com.</li>
+<li>Hosting and delivery from Cloudflare.</li>
+</ul>
+
+<h2>Affiliate links</h2>
+<p>Some links on HotelIndice lead to partner booking sites. We may earn a commission when you book through them, at no extra cost to you. When you click through, the partner site may set its own cookies and collect its own data. Their privacy policies apply once you leave our site.</p>
+
+<h2>How we use information</h2>
+<p>We use information to run and improve the site, respond to messages, and show relevant results. We do not sell your personal information.</p>
+
+<h2>Your choices</h2>
+<p>You can clear stored settings in your browser at any time. To ask about, correct, or delete information you sent us, email us at the address below.</p>
+
+<h2>Children</h2>
+<p>HotelIndice is not intended for children under 13.</p>
+
+<h2>Changes</h2>
+<p>We may update this policy and will change the date above when we do.</p>
+
+<h2>Contact</h2>
+<p><a href="mailto:okayelijah@gmail.com">okayielijah@gmail.com</a></p>
+
+<p><a href="/">&larr; Back to HotelIndice</a></p>
+</body>
+</html>
