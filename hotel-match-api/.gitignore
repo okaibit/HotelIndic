@@ -1,0 +1,10 @@
+.env
+.env.*
+*.key
+*.pem
+*.csr
+*.cnf
+hotelbeds-client-ca.crt
+review-requests.json
+node_modules
+.DS_Store
