@@ -1,15 +1,63 @@
+const path = require("path");
 require("dotenv").config();
 
 const fs = require("fs");
-const { Agent } = require("undici");
+const https = require("https");
 
-const hotelbedsDispatcher = new Agent({
-  connect: {
-    cert: fs.readFileSync("./certificate-39e00eb4d82118becdb11aa32ae1b1a6f2bebd61eef2ed58b1cfe628b9638438.pem"),
-    key: fs.readFileSync("./hotelbeds-client.key"),
-    passphrase: process.env.HOTELBEDS_KEY_PASSPHRASE
-  }
+const hotelbedsAgent = new https.Agent({
+  cert: fs.readFileSync("./hotelbeds-client-chain.pem"),
+  key: fs.readFileSync("./hotelbeds-client.key"),
+  passphrase: process.env.HOTELBEDS_KEY_PASSPHRASE
 });
+
+function hotelbedsRequest(url, options) {
+  return new Promise((resolve, reject) => {
+    const request = https.request(
+      url,
+      {
+        ...options,
+        agent: hotelbedsAgent
+      },
+      response => {
+        let body = "";
+
+        response.on("data", chunk => {
+          body += chunk;
+        });
+
+        response.on("end", () => {
+          let data;
+
+          try {
+            data = JSON.parse(body);
+          } catch {
+            data = body;
+          }
+
+          resolve({
+            ok: response.statusCode >= 200 && response.statusCode < 300,
+            status: response.statusCode,
+            async json() {
+              return data;
+            }
+          });
+        });
+      }
+    );
+
+    request.on("error", reject);
+
+    if (options.body) {
+      request.setHeader(
+        "Content-Length",
+        Buffer.byteLength(options.body)
+      );
+      request.write(options.body);
+    }
+
+    request.end();
+  });
+}
 
 
 const reviewRequestsFile = "./review-requests.json";
@@ -19,6 +67,7 @@ function saveReviewRequest(request) {
 
   if (fs.existsSync(reviewRequestsFile)) {
     try {
+
       requests = JSON.parse(fs.readFileSync(reviewRequestsFile, "utf8"));
       if (!Array.isArray(requests)) requests = [];
     } catch {
@@ -45,8 +94,15 @@ const crypto = require("crypto");
 const { normalizeHotels } = require("./normalizer");
 const { mapHotelFacilities } = require("./hotel-facility-mapper");
 const { matchHotels } = require("./matcher");
+const { searchStayAPI } = require("./stayapi-client");
+const { resolveStayAPIDestination } = require("./stayapi-destinations");
+const { lookupStayAPIDestination } = require("./stayapi-destination");
+const { normalizeStayAPIHotels } = require("./stayapi-normalizer");
+const { getCachedFacilities } = require("./stayapi-facilities-cache");
+const { getExchangeRate } = require("./fx");
 const { getHotelContent } = require("./hotelbeds-content");
 const { parseHotelQuery } = require("./query-parser");
+const { resolveDestination } = require("./destinations");
 
 const app = express();
 
@@ -55,34 +111,121 @@ app.use(express.json());
 
 const PORT = 3000;
 
-const DESTINATION_CODES = {
-  dubai: "DXB",
-  lagos: "LOS",
-  abuja: "ABV",
-  accra: "ACC",
-  nairobi: "NBO",
-  "cape town": "CPT",
-  johannesburg: "JNB",
-  london: "LON",
-  paris: "PAR",
-  barcelona: "BCN",
-  madrid: "MAD",
-  rome: "ROM",
-  istanbul: "IST",
-  "new york": "NYC",
-  miami: "MIA",
-  orlando: "ORL",
-  toronto: "YTO"
-};
 
 app.get("/", (req, res) => {
-  res.json({
-    status: "HotelIndice API is running"
-  });
+  res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 app.get("/api/hotels", async (req, res) => {
   try {
+    if (req.query.source === "stayapi") {
+      let result;
+
+      try {
+        result = await searchStayAPI({
+        destId: req.query.destId
+      ? Number(req.query.destId)
+      : (
+          resolveStayAPIDestination(req.query.destination) ??
+          (await lookupStayAPIDestination(req.query.destination)).destId
+        ),
+        checkin: req.query.checkIn || "2026-10-10",
+        checkout: req.query.checkOut || "2026-10-12",
+        adults: Number(req.query.adults || 2),
+        rooms: Number(req.query.rooms || 1),
+        children: Number(req.query.children || 0),
+        childrenAges: req.query.childAges
+          ? req.query.childAges.split(",").map(age => Number(age.trim()))
+          : [],
+        currency: req.query.currency || "USD",
+        rowsPerPage: Number(req.query.rowsPerPage || 25),
+        offset: Number(req.query.offset || 0)
+      });
+      } catch (error) {
+        console.error("StayAPI search unavailable:", error.message);
+
+        return res.status(503).json({
+          total: 0,
+          source: "stayapi",
+          error: "StayAPI search is currently unavailable.",
+          hotels: []
+        });
+      }
+
+      const stayApiHotels = result.data?.hotels || [];
+
+      const facilitiesByHotelId = Object.fromEntries(
+        stayApiHotels.map(hotel => [
+          hotel.hotel_id,
+          getCachedFacilities(hotel.hotel_id)?.facilities || {}
+        ])
+      );
+
+      const hotels = normalizeStayAPIHotels(
+        stayApiHotels,
+        facilitiesByHotelId
+      );
+
+      const matches = matchHotels(hotels, {
+        adults: Number(req.query.adults || 2),
+        children: Number(req.query.children || 0),
+        maxPrice: req.query.maxPrice !== undefined
+          ? Number(req.query.maxPrice)
+          : undefined,
+        budgetType: req.query.budgetType || "nightly",
+        displayBudget: req.query.maxPrice !== undefined
+          ? Number(req.query.maxPrice)
+          : undefined,
+
+        breakfastRequired: req.query.breakfast === "true",
+        poolRequired: req.query.pool === "true",
+        gymRequired: req.query.gym === "true",
+        parkingRequired: req.query.parking === "true",
+        kitchenRequired: req.query.kitchen === "true",
+        familyRoomRequired: req.query.familyRoom === "true",
+        internetRequired: req.query.internet === "true",
+
+        separateSleepingSpace:
+          req.query.separateSleepingSpace === "true",
+
+        connectingRooms:
+          req.query.connectingRooms === "true",
+
+        roomTypePreference:
+          req.query.roomTypePreference || null,
+
+        roomTypeRequired:
+          req.query.roomTypeRequired === "true",
+
+        bedroomsRequired:
+          req.query.bedrooms
+            ? Number(req.query.bedrooms)
+            : null,
+
+        bedroomMode:
+          req.query.bedroomMode || "exact",
+
+        bedroomMax:
+          req.query.bedroomMax
+            ? Number(req.query.bedroomMax)
+            : null
+      });
+
+      return res.json({
+        total: matches.length,
+        source: "stayapi",
+        search: {
+          destination: req.query.destination || req.query.destId,
+          checkIn: req.query.checkIn || "2026-10-10",
+          checkOut: req.query.checkOut || "2026-10-12",
+          adults: Number(req.query.adults || 2),
+          children: Number(req.query.children || 0),
+          currency: req.query.currency || "USD"
+        },
+        hotels: matches
+      });
+    }
+
     const apiKey = process.env.HOTELBEDS_API_KEY;
     const secret = process.env.HOTELBEDS_API_SECRET;
 
@@ -159,11 +302,16 @@ app.get("/api/hotels", async (req, res) => {
 
       destination: {
         code:
-          req.query.destination ||
-          (parsedQuery?.destination
-            ? DESTINATION_CODES[parsedQuery.destination]
-            : "DXB")
-      }
+          resolveDestination(
+            req.query.destination ||
+            parsedQuery?.destination ||
+            "Dubai"
+          ).code
+      },
+      currency:
+        req.query.currency ||
+        parsedQuery?.currency ||
+        "EUR"
     };
 
     if (req.query.dryRun === "true") {
@@ -174,11 +322,10 @@ app.get("/api/hotels", async (req, res) => {
       });
     }
 
-    const response = await fetch(
+    const response = await hotelbedsRequest(
       "https://api-mtls.test.hotelbeds.com/hotel-api/1.0/hotels",
       {
         method: "POST",
-        dispatcher: hotelbedsDispatcher,
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -191,7 +338,11 @@ app.get("/api/hotels", async (req, res) => {
 
     const data = await response.json();
 
-    console.log("Hotelbeds status:", response.status);
+    console.log("Hotelbeds availability status:", response.status);
+    console.log(
+      "Hotelbeds availability response:",
+      JSON.stringify(data)
+    );
 
     if (!response.ok) {
       console.log("Hotelbeds response:", data);
@@ -200,6 +351,11 @@ app.get("/api/hotels", async (req, res) => {
     }
 
     // Get hotel content metadata
+    console.log(
+      "Hotelbeds availability hotel count:",
+      Array.isArray(data.hotels) ? data.hotels.length : 0
+    );
+
     const availabilityHotels = Array.isArray(data.hotels)
       ? data.hotels
       : Array.isArray(data.hotels?.hotels)
@@ -210,8 +366,18 @@ app.get("/api/hotels", async (req, res) => {
       hotel => hotel.code
     );
 
+    console.log(
+      "Hotelbeds content request hotel codes:",
+      availableHotelCodes
+    );
+
     const contentHotels = await getHotelContent(
       availableHotelCodes
+    );
+
+    console.log(
+      "Hotelbeds content hotel count:",
+      contentHotels.length
     );
 
     const contentByHotelCode = new Map(
@@ -232,7 +398,7 @@ app.get("/api/hotels", async (req, res) => {
       }
 
       hotel.facilitiesMapped = mapHotelFacilities(contentHotel.facilities || []);
-
+      console.log("Hotelbeds facilities:", String(hotel.code), contentHotel.facilities || []);
       // Preserve hotel content for presentation
       hotel.contentMetadata = {
         images: contentHotel.images || [],
@@ -281,6 +447,35 @@ app.get("/api/hotels", async (req, res) => {
       req.query.maxPrice !== undefined
         ? Number(req.query.maxPrice)
         : parsedQuery?.maxPrice ?? undefined;
+
+    const requestedCurrency = body.currency;
+    const fxRates = {};
+
+    for (const hotel of hotels) {
+      for (const room of hotel.rooms || []) {
+        if (
+          room.price != null &&
+          room.currency &&
+          room.currency.toUpperCase() !== requestedCurrency.toUpperCase()
+        ) {
+          const fromCurrency = room.currency.toUpperCase();
+          const rateKey = `${fromCurrency}_${requestedCurrency.toUpperCase()}`;
+
+          if (!fxRates[rateKey]) {
+            fxRates[rateKey] = await getExchangeRate(
+              fromCurrency,
+              requestedCurrency
+            );
+          }
+
+          room.price = Number(
+            (Number(room.price) * fxRates[rateKey]).toFixed(2)
+          );
+
+          room.currency = requestedCurrency;
+        }
+      }
+    }
 
     const matcherMaxPrice =
       requestedBudget === undefined
@@ -377,6 +572,7 @@ app.get("/api/hotels", async (req, res) => {
 
         budgetType,
         budget: requestedBudget,
+        currency: body.currency,
 
         separateSleepingSpace:
           req.query.separateSleepingSpace === "true" ||
@@ -487,6 +683,8 @@ app.post("/api/review-requests", (req, res) => {
     message: "Your hotel review request has been received."
   });
 });
+
+app.use(express.static(path.join(__dirname, "..")));
 
 app.listen(PORT, () => {
   console.log(

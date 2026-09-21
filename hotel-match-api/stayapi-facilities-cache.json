@@ -1,0 +1,62 @@
+{
+  "791603": {
+    "facilities": {
+      "Activities": [
+        "Aerobics",
+        "Game room",
+        "Live music/Performance",
+        "Themed dinners",
+        "Walking tours",
+        "Water sports facilities on site"
+      ],
+      "Food & Drink": [
+        "Breakfast in the room",
+        "Coffee house on site",
+        "Kid-friendly buffet",
+        "Kids' meals",
+        "Restaurant",
+        "Bar",
+        "Snack bar"
+      ],
+      "General": [
+        "Airport drop-off",
+        "Airport pickup",
+        "Airport shuttle",
+        "Facilities for disabled guests",
+        "Family rooms",
+        "Non-smoking rooms",
+        "Room service"
+      ],
+      "Internet": [
+        "Internet"
+      ],
+      "Kitchen": [
+        "Shared kitchen"
+      ],
+      "Parking": [
+        "Accessible parking",
+        "Parking",
+        "Parking garage"
+      ],
+      "Spa": [
+        "Fitness center",
+        "Fenced pool",
+        "Hot tub/Jacuzzi",
+        "Outdoor swimming pool",
+        "Sauna",
+        "Spa and wellness center",
+        "Steam room"
+      ],
+      "View": [
+        "City view",
+        "Sea view",
+        "View"
+      ],
+      "Wheelchair accessibility": [
+        "All units are wheelchair accessible",
+        "Wheelchair accessible"
+      ]
+    },
+    "cachedAt": "2026-09-20T18:00:00.000Z"
+  }
+}

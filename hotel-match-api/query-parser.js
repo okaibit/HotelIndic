@@ -23,31 +23,14 @@ function parseHotelQuery(text = "") {
     connectingRooms: false
   };
 
-  const cities = [
-    "lagos",
-    "abuja",
-    "accra",
-    "nairobi",
-    "cape town",
-    "johannesburg",
-    "london",
-    "paris",
-    "barcelona",
-    "madrid",
-    "rome",
-    "istanbul",
-    "dubai",
-    "new york",
-    "miami",
-    "orlando",
-    "toronto"
-  ];
+  const destinationMatch = query.match(
+    /\b(?:in|near|around|at|to)\s+([a-z][a-z .'-]*?)(?=\s+(?:with|under|below|for|near|around|at|and|$))/i
+  );
 
-  for (const city of cities) {
-    if (query.includes(city)) {
-      result.destination = city;
-      break;
-    }
+  if (destinationMatch) {
+    result.destination = destinationMatch[1]
+      .trim()
+      .replace(/\s+/g, " ");
   }
 
   const adultsMatch = query.match(/(\d+)\s*adults?/);
@@ -126,17 +109,25 @@ function parseHotelQuery(text = "") {
   result.kitchen = /\bkitchen\b|\bkitchenette\b/.test(query);
 
   const priceMatch = query.match(
-    /(?:under|below|max(?:imum)?|less than)\s*[₦$€£]?\s*([\d,]+)\s*(k|thousand)?/
+    /(?:under|below|max(?:imum)?|less than)\s*([₦$€£])?\s*([\d,]+)\s*(k|thousand)?/
   );
 
   if (priceMatch) {
-    let amount = Number(priceMatch[1].replace(/,/g, ""));
+    let amount = Number(priceMatch[2].replace(/,/g, ""));
 
-    if (priceMatch[2] === "k" || priceMatch[2] === "thousand") {
+    if (priceMatch[3] === "k" || priceMatch[3] === "thousand") {
       amount *= 1000;
     }
 
+    const currencyMap = {
+      "₦": "NGN",
+      "$": "USD",
+      "€": "EUR",
+      "£": "GBP"
+    };
+
     result.maxPrice = amount;
+    result.currency = currencyMap[priceMatch[1]] || null;
     result.budgetType = /\bper night\b|\beach night\b|\bnightly\b/.test(query)
       ? "nightly"
       : "total";

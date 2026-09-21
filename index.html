@@ -3,6 +3,7 @@
 <head>
 <style>/* launch-fixes */
 .rating-row{display:none !important;}
+
 </style>
   <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
   (function () {
@@ -142,16 +143,16 @@ document.addEventListener("DOMContentLoaded", function(){
   --font-display: 'Newsreader', Georgia, serif;
 
   /* day palette (default) */
-  --bg: #E3DCC3;
-  --bg-panel: #EDE7D3;
-  --bg-card: #F5F1E4;
+  --bg: #FFFFFF;
+  --bg-panel: #FFFFFF;
+  --bg-card: #FFFFFF;
   --water: #1F6F72;
   --water-2: #2C8A8D;
-  --land: #CDBF98;
-  --land-2: #D9CCA6;
+  --land: #F5F5F5;
+  --land-2: #FAFAFA;
   --ink: #1B2A2E;
   --ink-soft: #4B5A57;
-  --line: rgba(27,42,46,0.14);
+  --line: #E5E5E5;
   --amber: #C98A00;
   --amber-glow: #F2B705;
   --coral: #D14B32;
@@ -165,16 +166,16 @@ document.addEventListener("DOMContentLoaded", function(){
 
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg: #0E1B22;
-    --bg-panel: #13232B;
-    --bg-card: #172A32;
-    --water: #0A2F38;
-    --water-2: #0F3B45;
-    --land: #2A2118;
-    --land-2: #33291D;
-    --ink: #EDE6D2;
-    --ink-soft: #AEBDBA;
-    --line: rgba(237,230,210,0.14);
+    --bg: #000000;
+    --bg-panel: #0A0A0A;
+    --bg-card: #18181B;
+    --water: #050505;
+    --water-2: #0A0A0A;
+    --land: #111111;
+    --land-2: #181818;
+    --ink: #F5F5F5;
+    --ink-soft: #A8A8A8;
+    --line: #27272A;
     --amber: #F2B705;
     --amber-glow: #FFD86B;
     --coral: #F0785C;
@@ -186,13 +187,13 @@ document.addEventListener("DOMContentLoaded", function(){
   }
 }
 :root[data-theme="dark"]{
-  --bg: #0E1B22;
-  --bg-panel: #13232B;
-  --bg-card: #172A32;
-  --water: #0A2F38;
-  --water-2: #0F3B45;
-  --land: #2A2118;
-  --land-2: #33291D;
+  --bg: #000000;
+  --bg-panel: #0A0A0A;
+  --bg-card: #18181B;
+  --water: #09090B;
+  --water-2: #18181B;
+  --land: #18181B;
+  --land-2: #27272A;
   --ink: #EDE6D2;
   --ink-soft: #AEBDBA;
   --line: rgba(237,230,210,0.14);
@@ -206,16 +207,16 @@ document.addEventListener("DOMContentLoaded", function(){
   color-scheme: dark;
 }
 :root[data-theme="light"]{
-  --bg: #E3DCC3;
-  --bg-panel: #EDE7D3;
-  --bg-card: #F5F1E4;
+  --bg: #FFFFFF;
+  --bg-panel: #FFFFFF;
+  --bg-card: #FFFFFF;
   --water: #1F6F72;
   --water-2: #2C8A8D;
-  --land: #CDBF98;
-  --land-2: #D9CCA6;
+  --land: #F5F5F5;
+  --land-2: #FAFAFA;
   --ink: #1B2A2E;
   --ink-soft: #4B5A57;
-  --line: rgba(27,42,46,0.14);
+  --line: #E5E5E5;
   --amber: #C98A00;
   --amber-glow: #F2B705;
   --coral: #D14B32;
@@ -430,8 +431,9 @@ header{
   transition: background 0.2s ease, color 0.2s ease;
 }
 .theme-toggle button.active{
-  background: var(--ink);
-  color: var(--bg-panel);
+  background: var(--bg-card);
+  color: var(--ink);
+  border: 1px solid var(--line);
 }
 .theme-toggle svg{ width:16px; height:16px; }
 
@@ -645,6 +647,200 @@ header{
   position:relative;
 }
 
+
+
+.hotel-detail-horizontal{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(220px, 1fr));
+  gap:14px;
+  margin-top:24px;
+}
+
+.hotel-detail-horizontal .hotel-detail-section{
+  min-width:0;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--bg-panel);
+}
+
+.hotel-detail-horizontal .hotel-detail-section h3{
+  margin:0 0 14px;
+  font-size:13px;
+}
+
+@media (max-width:1200px){
+  .hotel-detail-horizontal{
+    grid-template-columns:repeat(3, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width:800px){
+  .hotel-detail-horizontal{
+    grid-template-columns:repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width:600px){
+  .hotel-detail-horizontal{
+    display:flex;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+  }
+
+  .hotel-detail-horizontal .hotel-detail-section{
+    flex:0 0 82%;
+    scroll-snap-align:start;
+  }
+}
+
+.price-compare-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:3000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.48);
+}
+
+.price-compare-backdrop[hidden]{
+  display:none;
+}
+
+.price-compare-panel{
+  width:min(680px, 100%);
+  max-height:min(720px, calc(100vh - 40px));
+  overflow:auto;
+  background:var(--bg-panel);
+  color:var(--ink);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 18px 60px rgba(0,0,0,.25);
+  padding:24px;
+}
+
+.price-compare-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+}
+
+.price-compare-head h2{
+  margin:4px 0 4px;
+  font:700 24px var(--font-display);
+}
+
+.price-compare-head p{
+  margin:0;
+  color:var(--ink-soft);
+  font-size:13px;
+}
+
+.price-compare-close{
+  width:36px;
+  height:36px;
+  border:1px solid var(--line);
+  border-radius:50%;
+  background:transparent;
+  color:var(--ink);
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+}
+
+.price-compare-note{
+  margin:20px 0 14px;
+  padding:11px 13px;
+  border-radius:10px;
+  background:var(--bg-soft);
+  color:var(--ink-soft);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.price-provider-list{
+  display:grid;
+  gap:10px;
+}
+
+.price-provider-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:16px;
+  padding:15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+
+.price-provider-best{
+  border-color:var(--ink);
+}
+
+.provider-main{
+  display:grid;
+  gap:4px;
+}
+
+.provider-main strong{
+  font-size:14px;
+}
+
+.provider-main span{
+  color:var(--ink-soft);
+  font-size:12px;
+}
+
+.provider-price{
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.provider-btn{
+  white-space:nowrap;
+}
+
+.price-reality-check{
+  display:grid;
+  gap:5px;
+  margin-top:16px;
+  padding:14px;
+  border-radius:12px;
+  background:var(--bg-soft);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.price-reality-check span{
+  color:var(--ink-soft);
+}
+
+@media (max-width:600px){
+  .price-compare-backdrop{
+    align-items:flex-end;
+    padding:0;
+  }
+
+  .price-compare-panel{
+    width:100%;
+    max-height:88vh;
+    border-radius:18px 18px 0 0;
+    padding:20px;
+  }
+
+  .price-provider-row{
+    grid-template-columns:1fr auto;
+  }
+
+  .provider-btn{
+    grid-column:1 / -1;
+    width:100%;
+  }
+}
+
 .view-toggle{
   display:none;
 }
@@ -698,23 +894,25 @@ header{
   color:var(--bg-panel);
 }
 
-.main.view-list .map-viewport{
-  display:none;
-}
+@media (max-width: 600px){
+  .main.view-list .map-viewport{
+    display:none;
+  }
 
-.main.view-list .list-panel{
-  display:block;
-  width:100%;
-  height:100%;
-}
+  .main.view-list .list-panel{
+    display:block;
+    width:100%;
+    height:100%;
+  }
 
-.main.view-map .map-viewport{
-  display:block;
-  width:100%;
-}
+  .main.view-map .map-viewport{
+    display:block;
+    width:100%;
+  }
 
-.main.view-map .list-panel{
-  display:none;
+  .main.view-map .list-panel{
+    display:none;
+  }
 }
 
 /* ---- real world map ---- */
@@ -1504,6 +1702,105 @@ header{
   opacity:.65;
   white-space:nowrap;
 }
+
+/* Hotel detail tabs */
+.hotel-detail-tabs{
+  margin-top:24px;
+}
+
+.hotel-detail-tabbar{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  overflow-x:auto;
+  white-space:nowrap;
+  padding:4px 0 12px;
+  border-bottom:1px solid var(--line);
+  scrollbar-width:none;
+}
+
+.hotel-detail-tabbar::-webkit-scrollbar{
+  display:none;
+}
+
+.hotel-detail-tab{
+  flex:0 0 auto;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  padding:10px 14px;
+  border-radius:999px;
+  font:inherit;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.hotel-detail-tab:hover{
+  color:var(--text);
+  background:transparent;
+}
+
+.hotel-detail-tab.active{
+  color:var(--text);
+  background:transparent;
+  box-shadow:none;
+}
+
+.hotel-detail-tab-content{
+  padding-top:22px;
+}
+
+.hotel-detail-tab-content .hotel-detail-section{
+  padding:0;
+  border:0;
+  background:transparent;
+}
+
+.hotel-detail-description{
+  margin-top:18px;
+  max-width:760px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.hotel-detail-gallery{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:14px;
+  margin-top:18px;
+}
+
+.hotel-detail-gallery img{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  border-radius:14px;
+  display:block;
+}
+
+@media (max-width:600px){
+  .hotel-detail-tabs{
+    margin-top:18px;
+  }
+
+  .hotel-detail-tabbar{
+    margin-right:-16px;
+    padding-right:16px;
+  }
+
+  .hotel-detail-tab{
+    padding:9px 12px;
+    font-size:12px;
+  }
+
+  .hotel-detail-gallery{
+    grid-template-columns:1fr;
+  }
+}
+
+
 </style>
 
 </head>
@@ -1699,7 +1996,59 @@ header{
     </div>
     <div class="list-panel" id="listPanel"></div>
 
-    <div class="view-toggle" id="viewToggle" aria-label="Choose view">
+
+  <div class="price-compare-backdrop" id="priceCompareBackdrop" hidden>
+    <div class="price-compare-panel" role="dialog" aria-modal="true" aria-labelledby="priceCompareTitle">
+      <div class="price-compare-head">
+        <div>
+          <div class="eyebrow">COMPARE BOOKING OPTIONS</div>
+          <h2 id="priceCompareTitle">Where should you book?</h2>
+          <p id="priceCompareHotel">Hotel</p>
+        </div>
+        <button type="button" class="price-compare-close" id="priceCompareClose" aria-label="Close">×</button>
+      </div>
+
+      <div class="price-compare-note">
+        Prices shown for comparison. Final availability and terms are confirmed by the booking provider.
+      </div>
+
+      <div class="price-provider-list" id="priceProviderList">
+        <div class="price-provider-row">
+          <div class="provider-main">
+            <strong>Booking.com</strong>
+            <span>Standard Room · Free cancellation</span>
+          </div>
+          <div class="provider-price">₦185,000</div>
+          <button class="btn-primary provider-btn">View deal</button>
+        </div>
+
+        <div class="price-provider-row">
+          <div class="provider-main">
+            <strong>Expedia</strong>
+            <span>Standard Room · Breakfast included</span>
+          </div>
+          <div class="provider-price">₦181,000</div>
+          <button class="btn-primary provider-btn">View deal</button>
+        </div>
+
+        <div class="price-provider-row price-provider-best">
+          <div class="provider-main">
+            <strong>HotelIndice pick</strong>
+            <span>Direct hotel · Best available price</span>
+          </div>
+          <div class="provider-price">₦176,000</div>
+          <button class="btn-primary provider-btn">View deal</button>
+        </div>
+      </div>
+
+      <div class="price-reality-check">
+        <strong>Reality Check</strong>
+        <span>The cheapest option includes breakfast and is currently shown as the lowest price in this comparison.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-toggle" id="viewToggle" aria-label="Choose view">
       <button type="button" id="mapViewBtn" class="active">Map</button>
       <button type="button" id="listViewBtn">List</button>
     </div>
@@ -2329,10 +2678,32 @@ function initRealMap(){
     maxZoom: 18
   }).setView([20, 0], 2);
 
-  L.tileLayer("https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=auf0D60b0dQGfvYUBn8Y&language=en", {
-    maxZoom: 20,
-    attribution: '&copy; OpenStreetMap contributors &copy; MapTiler'
-  }).addTo(realMap);
+  // Show static hotel price markers immediately on first map load.
+  renderHotelMarkers();
+
+  const mapTiles = L.tileLayer(
+    "https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=auf0D60b0dQGfvYUBn8Y&language=en",
+    {
+      maxZoom: 20,
+      attribution: '&copy; OpenStreetMap contributors &copy; MapTiler',
+      className: document.documentElement.getAttribute("data-theme") === "dark"
+        ? "hotel-map-dark-tiles"
+        : ""
+    }
+  ).addTo(realMap);
+
+  window.applyHotelMapTheme = function(){
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    const tilePane = document.querySelector(".hotel-map-dark-tiles");
+
+    if(tilePane){
+      tilePane.style.filter = dark
+        ? "brightness(0.38) contrast(1.15) grayscale(1)"
+        : "";
+    }
+  };
+
+  window.applyHotelMapTheme();
 
   renderDestinationMarkers();
 
@@ -2386,9 +2757,7 @@ function renderHotelMarkers(){
 
   const zoom = realMap.getZoom();
 
-  // Don't flood the world map with hotel pins.
-  // Hotels appear once the user is sufficiently zoomed in.
-  if(zoom < 8) return;
+  // Show static hotel price markers immediately.
 
   HOTELS.forEach(h=>{
 
@@ -2413,7 +2782,7 @@ function renderHotelMarkers(){
 
     const icon = L.divIcon({
       className: "hotel-marker-wrap",
-      html: `<div class="hotel-marker"><img src="${escapeHtml(h.image || HOTEL_MARKER_IMAGE)}" alt=""><span>${escapeHtml(priceLabel)}</span></div>`,
+      html: `<div class="hotel-marker"><span>${escapeHtml(priceLabel)}</span></div>`,
       iconSize: null,
       iconAnchor: [0, 0]
     });
@@ -2556,6 +2925,7 @@ function openHotelDetail(id){
   const amenityNames = {
     pool:"Pool",
     wifi_free:"Free Wi-Fi",
+    air_conditioning:"Air conditioning",
     breakfast_included:"Breakfast included",
     breakfast_available:"Breakfast available",
     parking_free:"Free parking",
@@ -2666,111 +3036,325 @@ function openHotelDetail(id){
           </div>
         </div>
 
-        <div class="hotel-detail-section">
-          <h3>Why this hotel</h3>
+        <div class="hotel-detail-tabs">
 
-          ${
-            Array.isArray(h.liveMatch?.reasons) && h.liveMatch.reasons.length
-              ? `
-                <div class="hotel-detail-room-meta">
-                  ${escapeHtml(h.liveMatch.label || "Based on your search")}
-                </div>
+          <div class="hotel-detail-tabbar" role="tablist" aria-label="Hotel details">
 
-                <div class="req-list">
-                  ${h.liveMatch.reasons.map(reason =>
-                    `<div class="req-item met">${checkIcon}<span>${escapeHtml(reason)}</span></div>`
-                  ).join("")}
-                </div>
-              `
-              : Array.isArray(h._matches) && h._matches.length
-                ? `
-                  <div class="hotel-detail-room-meta">
-                    ${h._matches.filter(m => m.outcome === "met").length}
-                    of ${h._matches.length} things you asked for match this hotel.
-                  </div>
+            <button type="button" class="hotel-detail-tab active" role="tab" aria-selected="true" data-tab="info">Info</button>
+            <button type="button" class="hotel-detail-tab" role="tab" aria-selected="false" data-tab="why">Why this hotel</button>
+            <button type="button" class="hotel-detail-tab" role="tab" aria-selected="false" data-tab="amenities">Amenities</button>
+            <button type="button" class="hotel-detail-tab" role="tab" aria-selected="false" data-tab="rooms">Rooms</button>
+            <button type="button" class="hotel-detail-tab" role="tab" aria-selected="false" data-tab="signals">Signals</button>
+            <button type="button" class="hotel-detail-tab" role="tab" aria-selected="false" data-tab="photos">Photos</button>
+            <button type="button" class="hotel-detail-tab" role="tab" aria-selected="false" data-tab="data">Data</button>
 
-                  <div class="req-list">
-                    ${h._matches.map(m => {
-                      const cls =
-                        m.outcome === "met"
-                          ? "met"
-                          : m.outcome === "partial" || m.outcome === "unknown"
-                            ? "partial"
-                            : "not";
-
-                      const icon =
-                        m.outcome === "met"
-                          ? checkIcon
-                          : m.outcome === "not"
-                            ? xIcon
-                            : dashIcon;
-
-                      return `<div class="req-item ${cls}">${icon}<span>${escapeHtml(m.text)}</span></div>`;
-                    }).join("")}
-                  </div>
-                `
-                : `
-                  <div class="hotel-detail-room-meta">
-                    This score is based on the available hotel data and matching signals.
-                  </div>
-                `
-          }
-
-          ${
-            buildHotelDetailWatchouts(h).length
-              ? `
-                <div class="hotel-detail-caveats">
-                  ${buildHotelDetailWatchouts(h).map(c =>
-                    `<div class="caveat"><b>Things to know:</b> ${escapeHtml(c)}</div>`
-                  ).join("")}
-                </div>
-              `
-              : `
-                <div class="hotel-detail-room-meta">
-                  No major watch-outs found in the available data.
-                </div>
-              `
-          }
-        </div>
-
-        <div class="hotel-detail-section">
-          <h3>Price</h3>
-          <div class="hotel-detail-price">
-            ${fmtMoney(h.price.typical, h.price.currency)}
-            <span>/ night, typical</span>
           </div>
-        </div>
 
-        <div class="hotel-detail-section">
-          <h3>What this hotel has</h3>
-          <div class="hotel-detail-tags">
-            ${tags || "<span class=\"hotel-detail-tag\">Limited amenity data</span>"}
+          <div class="hotel-detail-tab-content" id="hotelDetailTabContent">
+
+            <div class="hotel-detail-section">
+
+              <h3>Info</h3>
+
+              <div class="hotel-detail-price">
+                ${fmtMoney(h.price.typical, h.price.currency)}
+                <span>/ night, typical</span>
+              </div>
+
+              ${
+                h.description
+                  ? `
+                    <div class="hotel-detail-description">
+                      ${escapeHtml(h.description)}
+                    </div>
+                  `
+                  : `
+                    <div class="hotel-detail-room-meta">
+                      Explore this hotel's rooms, amenities, signals and matching details using the tabs above.
+                    </div>
+                  `
+              }
+
+            </div>
+
           </div>
-        </div>
 
-        <div class="hotel-detail-section">
-          <h3>Rooms</h3>
-          ${rooms || "<div class=\"hotel-detail-room-meta\">Room information unavailable.</div>"}
         </div>
-
-        <div class="hotel-detail-section">
-          <h3>Hotel signals</h3>
-          ${signals || "<div class=\"hotel-detail-room-meta\">No additional signals available.</div>"}
-        </div>
-
-        <div class="hotel-detail-section">
-          <h3>Data coverage</h3>
-          <div class="hotel-detail-room-meta">
-            ${Math.round(Number(h.dataCompleteness || 0) * 100)}% of the available hotel profile is covered.
-          </div>
-        </div>
-
       </div>
     </div>
   `;
 
   overlay.hidden = false;
   document.body.style.overflow = "hidden";
+
+  setupHotelDetailTabs(h);
+}
+
+
+function renderHotelDetailTabContent(h, tab){
+
+  const container = document.getElementById("hotelDetailTabContent");
+
+  if(!container) return;
+
+  let html = "";
+
+  const amenityNames = {
+    pool:"Pool",
+    wifi_free:"Free Wi-Fi",
+    breakfast_included:"Breakfast included",
+    breakfast_available:"Breakfast available",
+    parking_free:"Free parking",
+    gym:"Gym",
+    spa:"Spa",
+    beach_access:"Beach access",
+    kids_club:"Kids club",
+    childrens_pool:"Children's pool",
+    backup_generator:"Backup generator",
+    gated_compound:"Gated compound",
+    security_24h:"24h security",
+    work_desk:"Work desk",
+    restaurant:"Restaurant",
+    airport_shuttle:"Airport shuttle",
+    meeting_rooms:"Meeting rooms"
+  };
+
+  const tags = Object.entries(h.amenities || {})
+    .filter(([_, value]) => value && value.present)
+    .slice(0, 12)
+    .map(([key, value]) => {
+      const label = amenityNames[key] || key.replace(/_/g, " ");
+      const detail = value.detail ? ` · ${value.detail}` : "";
+      return `<span class="hotel-detail-tag">${escapeHtml(label + detail)}</span>`;
+    })
+    .join("");
+
+  const rooms = (h.rooms || [])
+    .map(room => {
+      const beds = (room.beds || [])
+        .map(b => `${b.count} ${b.type.replace(/_/g, " ")}`)
+        .join(", ");
+
+      return `
+        <div class="hotel-detail-room">
+          <div class="hotel-detail-room-name">${escapeHtml(room.name)}</div>
+          <div class="hotel-detail-room-meta">
+            Sleeps ${room.sleeps} · ${escapeHtml((room.layout || "").replace(/_/g, " "))}${room.sizeSqm ? ` · ${room.sizeSqm} m²` : ""}${beds ? ` · ${escapeHtml(beds)}` : ""}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  const signals = Object.entries(h.signals || {})
+    .slice(0, 8)
+    .map(([key, value]) => `
+      <div class="hotel-detail-signal">
+        <span>${escapeHtml(key.replace(/_/g, " "))}</span>
+        <span class="hotel-detail-signal-value">${Number(value.score)}/100</span>
+      </div>
+    `)
+    .join("");
+
+  if(tab === "info"){
+    html = `
+      <div class="hotel-detail-section">
+        <h3>Info</h3>
+
+        <div class="hotel-detail-price">
+          ${fmtMoney(h.price.typical, h.price.currency)}
+          <span>/ night, typical</span>
+        </div>
+
+        ${
+          h.description
+            ? `<div class="hotel-detail-description">${escapeHtml(h.description)}</div>`
+            : `<div class="hotel-detail-room-meta">
+                Explore this hotel's rooms, amenities, signals and matching details using the tabs above.
+              </div>`
+        }
+      </div>
+    `;
+  }
+
+  if(tab === "why"){
+    html = `
+      <div class="hotel-detail-section">
+        <h3>Why this hotel</h3>
+
+        ${
+          Array.isArray(h.liveMatch?.reasons) && h.liveMatch.reasons.length
+            ? `
+              <div class="hotel-detail-room-meta">
+                ${escapeHtml(h.liveMatch.label || "Based on your search")}
+              </div>
+
+              <div class="req-list">
+                ${h.liveMatch.reasons.map(reason =>
+                  `<div class="req-item met">${checkIcon}<span>${escapeHtml(reason)}</span></div>`
+                ).join("")}
+              </div>
+            `
+            : Array.isArray(h._matches) && h._matches.length
+              ? `
+                <div class="hotel-detail-room-meta">
+                  ${h._matches.filter(m => m.outcome === "met").length}
+                  of ${h._matches.length} things you asked for match this hotel.
+                </div>
+
+                <div class="req-list">
+                  ${h._matches.map(m => {
+                    const cls =
+                      m.outcome === "met"
+                        ? "met"
+                        : m.outcome === "partial" || m.outcome === "unknown"
+                          ? "partial"
+                          : "not";
+
+                    const icon =
+                      m.outcome === "met"
+                        ? checkIcon
+                        : m.outcome === "not"
+                          ? xIcon
+                          : dashIcon;
+
+                    return `<div class="req-item ${cls}">${icon}<span>${escapeHtml(m.text)}</span></div>`;
+                  }).join("")}
+                </div>
+              `
+              : `
+                <div class="hotel-detail-room-meta">
+                  This score is based on the available hotel data and matching signals.
+                </div>
+              `
+        }
+
+        ${
+          buildHotelDetailWatchouts(h).length
+            ? `
+              <div class="hotel-detail-caveats">
+                ${buildHotelDetailWatchouts(h).map(c =>
+                  `<div class="caveat"><b>Things to know:</b> ${escapeHtml(c)}</div>`
+                ).join("")}
+              </div>
+            `
+            : `
+              <div class="hotel-detail-room-meta">
+                No major watch-outs found in the available data.
+              </div>
+            `
+        }
+      </div>
+    `;
+  }
+
+  if(tab === "amenities"){
+    html = `
+      <div class="hotel-detail-section">
+        <h3>What this hotel has</h3>
+
+        <div class="hotel-detail-tags">
+          ${tags || "<span class=\"hotel-detail-tag\">Limited amenity data</span>"}
+        </div>
+      </div>
+    `;
+  }
+
+  if(tab === "rooms"){
+    html = `
+      <div class="hotel-detail-section">
+        <h3>Rooms</h3>
+        ${rooms || "<div class=\"hotel-detail-room-meta\">Room information unavailable.</div>"}
+      </div>
+    `;
+  }
+
+  if(tab === "signals"){
+    html = `
+      <div class="hotel-detail-section">
+        <h3>Hotel signals</h3>
+        ${signals || "<div class=\"hotel-detail-room-meta\">No additional signals available.</div>"}
+      </div>
+    `;
+  }
+
+  if(tab === "photos"){
+    const photos = Array.isArray(h.images)
+      ? h.images
+          .filter(image => image && image.path)
+          .map(image => `https://photos.hotelbeds.com/giata/${image.path}`)
+          .filter((url, index, arr) => arr.indexOf(url) === index)
+          .slice(0, 12)
+      : [];
+
+    html = `
+      <div class="hotel-detail-section">
+        <h3>Photos</h3>
+
+        ${
+          photos.length
+            ? `
+              <div class="hotel-detail-gallery">
+                ${photos.map((url, index) => `
+                  <img
+                    src="${escapeHtml(url)}"
+                    alt="${escapeHtml(h.name)} photo ${index + 1}"
+                    loading="lazy"
+                  >
+                `).join("")}
+              </div>
+            `
+            : `
+              <div class="hotel-detail-room-meta">
+                No hotel photos available yet.
+              </div>
+            `
+        }
+      </div>
+    `;
+  }
+
+  if(tab === "data"){
+    html = `
+      <div class="hotel-detail-section">
+        <h3>Data coverage</h3>
+
+        <div class="hotel-detail-price">
+          ${Math.round(Number(h.dataCompleteness || 0) * 100)}%
+        </div>
+
+        <div class="hotel-detail-room-meta">
+          of the available hotel profile is covered.
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+function setupHotelDetailTabs(h){
+
+  const tabs = document.querySelectorAll(".hotel-detail-tab");
+
+  tabs.forEach(tab => {
+
+    tab.addEventListener("click", ()=>{
+
+      tabs.forEach(t=>{
+        t.classList.remove("active");
+        t.setAttribute("aria-selected", "false");
+      });
+
+      tab.classList.add("active");
+      tab.setAttribute("aria-selected", "true");
+
+      renderHotelDetailTabContent(h, tab.dataset.tab);
+
+    });
+
+  });
+
 }
 
 function focusHotel(id, fly){
@@ -2959,6 +3543,26 @@ const checkIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const dashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>`;
 const xIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
 
+
+function openPriceCompare(hotelId){
+  const hotel = HOTELS.find(h => h.id === hotelId);
+  const backdrop = document.getElementById("priceCompareBackdrop");
+  const title = document.getElementById("priceCompareTitle");
+  const hotelName = document.getElementById("priceCompareHotel");
+
+  if(!hotel || !backdrop) return;
+
+  title.textContent = "Where should you book?";
+  hotelName.textContent = hotel.name;
+
+  backdrop.hidden = false;
+}
+
+function closePriceCompare(){
+  const backdrop = document.getElementById("priceCompareBackdrop");
+  if(backdrop) backdrop.hidden = true;
+}
+
 function renderList(){
   if(state.parsedQuery && !state.liveApiResults){
     HOTELS.forEach(h=>{
@@ -3115,7 +3719,7 @@ function renderList(){
         <div class="price"><b>${fmtMoney(h.price.typical, h.price.currency)}</b><span class="per"> / night, typical</span></div>
         <div class="card-actions">
           <button class="btn-ghost why-btn" data-id="${h.id}">Why this hotel?</button>
-          <button class="btn-primary">Check price</button>
+          <button class="btn-primary check-price-btn" data-id="${h.id}">Check price</button>
         </div>
       </div>
       ${liveWhyHtml || whyHtml}
@@ -3602,6 +4206,11 @@ nlSearch.addEventListener("keydown", async (event)=>{
             present: h.facilitiesMapped?.gym === true,
             confidence: "verified"
           },
+          air_conditioning: {
+            present: h.facilitiesMapped?.air_conditioning === true,
+            confidence: "verified"
+          },
+
           parking_free: {
             present: h.facilitiesMapped?.parking === true,
             confidence: "verified"
@@ -3616,7 +4225,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
           }
         },
 
-        signals: {},
+        signals: h.signals || {},
 
         rooms: [{
           name: h.roomName,
@@ -3806,6 +4415,22 @@ function setViewMode(mode){
 
 document.getElementById("mapViewBtn")?.addEventListener("click", () => setViewMode("map"));
 document.getElementById("listViewBtn")?.addEventListener("click", () => setViewMode("list"));
+
+
+document.addEventListener("click", event => {
+  const button = event.target.closest(".check-price-btn");
+  if(button){
+    openPriceCompare(button.dataset.id);
+  }
+
+  if(event.target.closest("#priceCompareClose")){
+    closePriceCompare();
+  }
+
+  if(event.target.id === "priceCompareBackdrop"){
+    closePriceCompare();
+  }
+});
 
 buildMapArt();
 applyThemeButtons();
