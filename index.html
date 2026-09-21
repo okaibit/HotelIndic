@@ -14,18 +14,60 @@
       document.head.appendChild(script);
   })();
 </script>
-  <script>
+
+
+<script>
 document.addEventListener("DOMContentLoaded", function(){
   var app = document.querySelector(".app");
   if(!app) return;
   var f = document.createElement("footer");
   f.style.cssText = "flex-shrink:0;padding:8px 14px;font-size:11px;line-height:1.5;text-align:center;border-top:1px solid var(--line);background:var(--bg-panel);color:var(--ink-soft);";
-  f.innerHTML = "Hotels and ratings shown are sample data for demonstration. HotelIndice may earn a commission when you book through partner links, at no extra cost to you. · <a href='/privacy.html' style='color:inherit'>Privacy</a> · <a href='mailto:okayielijah@gmail.com' style='color:inherit'>Contact</a>";
+  if(localStorage.getItem("hotelIndiceNoticeDismissed") !== "1"){
+    f.innerHTML = '<div id="siteNotice" class="site-notice"><span>Hotels and ratings shown are sample data for demonstration. HotelIndice may earn a commission when you book through partner links, at no extra cost to you.</span><button type="button" id="siteNoticeClose" aria-label="Dismiss notice">×</button></div>';
+
+    const notice = f.querySelector("#siteNotice");
+    const close = f.querySelector("#siteNoticeClose");
+
+    close.addEventListener("click", ()=>{
+      notice.style.display = "none";
+      localStorage.setItem("hotelIndiceNoticeDismissed", "1");
+    });
+  }
   app.appendChild(f);
 });
 </script>
 
   <style>
+.site-notice{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:7px 14px;
+  color:var(--ink-soft);
+  font-size:11px;
+  line-height:1.4;
+}
+
+.site-notice span{
+  max-width:900px;
+}
+
+.site-notice button{
+  flex:0 0 auto;
+  border:0;
+  background:transparent;
+  color:var(--ink-soft);
+  font-size:18px;
+  line-height:1;
+  cursor:pointer;
+  padding:2px 4px;
+}
+
+.site-notice button:hover{
+  color:var(--ink);
+}
+
 @media (max-width: 860px){
   header{
     display:flex !important;
@@ -4060,6 +4102,21 @@ function renderDestinationSuggestions(query){
 nlSearch.addEventListener("input", ()=>{
   searchClear.classList.toggle("show", nlSearch.value.length > 0);
   renderDestinationSuggestions(nlSearch.value);
+});
+
+searchClear.addEventListener("click", ()=>{
+  nlSearch.value = "";
+  searchClear.classList.remove("show");
+  destinationSuggestions.innerHTML = "";
+  destinationSuggestions.classList.remove("show");
+
+  state.query = "";
+  state.parsedQuery = null;
+  state.liveApiResults = false;
+
+  renderList();
+  renderHotelMarkers();
+  updateMapLegend();
 });
 
 destinationSuggestions.addEventListener("click", event=>{
