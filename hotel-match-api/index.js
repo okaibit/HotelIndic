@@ -1,6 +1,25 @@
 const path = require("path");
 require("dotenv").config();
 
+// Simple in-memory cache for SerpApi results, to avoid burning
+// search quota on repeat requests for the same city/dates.
+const serpApiCache = new Map();
+const SERPAPI_CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
+
+function getCachedSerpApiResult(key) {
+  const hit = serpApiCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.time > SERPAPI_CACHE_TTL_MS) {
+    serpApiCache.delete(key);
+    return null;
+  }
+  return hit.data;
+}
+
+function setCachedSerpApiResult(key, data) {
+  serpApiCache.set(key, { data, time: Date.now() });
+}
+
 const fs = require("fs");
 const https = require("https");
 
@@ -223,6 +242,49 @@ app.get("/api/hotels", async (req, res) => {
           currency: req.query.currency || "USD"
         },
         hotels: matches
+      });
+    }
+
+    if (req.query.source === "serpapi") {
+      const { searchHotelsSerpApi } = require("./serpapi-client");
+      const { normalizeSerpApiHotel } = require("./serpapi-normalizer");
+
+      const destination = req.query.destination || req.query.q || "hotels";
+      const checkIn = req.query.checkIn || "2026-12-20";
+      const checkOut = req.query.checkOut || "2026-12-23";
+      const currency = req.query.currency || "USD";
+      const cacheKey = [destination, checkIn, checkOut, currency].join("|").toLowerCase();
+
+      let hotels = getCachedSerpApiResult(cacheKey);
+
+      if (!hotels) {
+        let properties;
+        try {
+          properties = await searchHotelsSerpApi({
+            query: destination,
+            checkIn,
+            checkOut,
+            currency
+          });
+        } catch (error) {
+          console.error("SerpApi search failed:", error.message);
+          return res.status(503).json({
+            total: 0,
+            source: "serpapi",
+            error: "Hotel search is currently unavailable.",
+            hotels: []
+          });
+        }
+
+        hotels = properties.map(normalizeSerpApiHotel);
+        setCachedSerpApiResult(cacheKey, hotels);
+      }
+
+      return res.json({
+        total: hotels.length,
+        source: "serpapi",
+        search: { destination, checkIn, checkOut, currency },
+        hotels
       });
     }
 
@@ -625,6 +687,60 @@ app.get("/api/hotels", async (req, res) => {
   }
 });
 
+
+
+const FEATURED_CITIES = [
+  "Lagos",
+  "Paris",
+  "Tokyo",
+  "New York",
+  "São Paulo",
+  "Sydney"
+];
+
+const FEATURED_CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
+let featuredCache = null;
+let featuredCacheTime = 0;
+
+app.get("/api/hotels/featured", async (req, res) => {
+  try {
+    if (featuredCache && Date.now() - featuredCacheTime < FEATURED_CACHE_TTL_MS) {
+      return res.json({ total: featuredCache.length, source: "serpapi", hotels: featuredCache });
+    }
+
+    const { searchHotelsSerpApi } = require("./serpapi-client");
+    const { normalizeSerpApiHotel } = require("./serpapi-normalizer");
+
+    const checkIn = "2026-12-20";
+    const checkOut = "2026-12-23";
+
+    const results = await Promise.allSettled(
+      FEATURED_CITIES.map(city =>
+        searchHotelsSerpApi({ query: city, checkIn, checkOut, currency: "USD" })
+      )
+    );
+
+    const allHotels = [];
+
+    results.forEach((result, i) => {
+      if (result.status === "fulfilled") {
+        const normalized = result.value.map(normalizeSerpApiHotel);
+        normalized.forEach(h => { h.featuredCity = FEATURED_CITIES[i]; });
+        allHotels.push(...normalized);
+      } else {
+        console.error(`Featured city failed (${FEATURED_CITIES[i]}):`, result.reason?.message);
+      }
+    });
+
+    featuredCache = allHotels;
+    featuredCacheTime = Date.now();
+
+    res.json({ total: allHotels.length, source: "serpapi", hotels: allHotels });
+  } catch (error) {
+    console.error("Featured hotels failed:", error.message);
+    res.status(503).json({ total: 0, source: "serpapi", error: "Featured hotels unavailable", hotels: [] });
+  }
+});
 
 app.get("/api/review-requests", (req, res) => {
   const adminToken = req.get("X-HotelIndice-Admin-Token");

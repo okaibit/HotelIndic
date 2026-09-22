@@ -1807,11 +1807,50 @@ header{
   line-height:1.7;
 }
 
+.hotel-detail-description-box{
+  margin-top:18px;
+  max-width:760px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px 16px;
+}
+.hotel-detail-description-box summary{
+  cursor:pointer;
+  font-weight:600;
+  list-style:none;
+}
+.hotel-detail-description-box summary::-webkit-details-marker{
+  display:none;
+}
+.hotel-detail-description-box summary::after{
+  content:"▾";
+  float:right;
+  transition:transform 0.15s ease;
+}
+.hotel-detail-description-box[open] summary::after{
+  transform:rotate(180deg);
+}
+.hotel-detail-description-box .hotel-detail-description{
+  margin-top:10px;
+}
+
 .hotel-detail-gallery{
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:14px;
   margin-top:18px;
+}
+
+.hotel-detail-gallery:has(.hotel-detail-info-thumb){
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px;
+}
+.hotel-detail-info-thumb{
+  cursor:pointer;
+  transition:opacity 0.15s ease;
+}
+.hotel-detail-info-thumb:hover{
+  opacity:0.85;
 }
 
 .hotel-detail-gallery img{
@@ -2111,7 +2150,7 @@ header{
 </div>
 
 <script>
-(function(){
+(async function(){
 "use strict";
 
 /* ============================= DATA =============================
@@ -3012,15 +3051,29 @@ function openHotelDetail(id){
     })
     .join("");
 
-  const signals = Object.entries(h.signals || {})
-    .slice(0, 6)
-    .map(([key, value]) => `
-      <div class="hotel-detail-signal">
-        <span>${escapeHtml(key.replace(/_/g, " "))}</span>
-        <span class="hotel-detail-signal-value">${Number(value.score)}/100</span>
-      </div>
-    `)
-    .join("");
+  const signals = (h.signals && Array.isArray(h.signals.reviewSentiment) && h.signals.reviewSentiment.length)
+    ? h.signals.reviewSentiment
+        .slice(0, 6)
+        .map(s => {
+          const pct = s.mentioned ? Math.round((s.positive / s.mentioned) * 100) : null;
+          return `
+            <div class="hotel-detail-signal">
+              <span>${escapeHtml(s.category)}</span>
+              <span class="hotel-detail-signal-value">${pct != null ? pct + "% positive" : "—"}${s.mentioned ? ` (${s.mentioned} mentions)` : ""}</span>
+            </div>
+          `;
+        })
+        .join("")
+    : Object.entries(h.signals || {})
+        .filter(([key]) => key !== "reviewSentiment")
+        .slice(0, 6)
+        .map(([key, value]) => `
+          <div class="hotel-detail-signal">
+            <span>${escapeHtml(key.replace(/_/g, " "))}</span>
+            <span class="hotel-detail-signal-value">${Number(value.score)}/100</span>
+          </div>
+        `)
+        .join("");
 
   content.innerHTML = `
     <div class="hotel-detail-content">
@@ -3188,17 +3241,39 @@ function renderHotelDetailTabContent(h, tab){
     })
     .join("");
 
-  const signals = Object.entries(h.signals || {})
-    .slice(0, 8)
-    .map(([key, value]) => `
-      <div class="hotel-detail-signal">
-        <span>${escapeHtml(key.replace(/_/g, " "))}</span>
-        <span class="hotel-detail-signal-value">${Number(value.score)}/100</span>
-      </div>
-    `)
-    .join("");
+  const signals = (h.signals && Array.isArray(h.signals.reviewSentiment) && h.signals.reviewSentiment.length)
+    ? h.signals.reviewSentiment
+        .slice(0, 8)
+        .map(s => {
+          const pct = s.mentioned ? Math.round((s.positive / s.mentioned) * 100) : null;
+          return `
+            <div class="hotel-detail-signal">
+              <span>${escapeHtml(s.category)}</span>
+              <span class="hotel-detail-signal-value">${pct != null ? pct + "% positive" : "—"}${s.mentioned ? ` (${s.mentioned} mentions)` : ""}</span>
+            </div>
+          `;
+        })
+        .join("")
+    : Object.entries(h.signals || {})
+        .filter(([key]) => key !== "reviewSentiment")
+        .slice(0, 8)
+        .map(([key, value]) => `
+          <div class="hotel-detail-signal">
+            <span>${escapeHtml(key.replace(/_/g, " "))}</span>
+            <span class="hotel-detail-signal-value">${Number(value.score)}/100</span>
+          </div>
+        `)
+        .join("");
 
   if(tab === "info"){
+    const infoPhotos = Array.isArray(h.images)
+      ? h.images
+          .map(image => typeof image === "string" ? image : (image && image.path ? `https://photos.hotelbeds.com/giata/${image.path}` : null))
+          .filter(Boolean)
+          .filter((url, index, arr) => arr.indexOf(url) === index)
+          .slice(0, 6)
+      : [];
+
     html = `
       <div class="hotel-detail-section">
         <h3>Info</h3>
@@ -3210,10 +3285,29 @@ function renderHotelDetailTabContent(h, tab){
 
         ${
           h.description
-            ? `<div class="hotel-detail-description">${escapeHtml(h.description)}</div>`
+            ? `<details class="hotel-detail-description-box">
+                <summary>About this hotel</summary>
+                <div class="hotel-detail-description">${escapeHtml(h.description)}</div>
+              </details>`
             : `<div class="hotel-detail-room-meta">
                 Explore this hotel's rooms, amenities, signals and matching details using the tabs above.
               </div>`
+        }
+
+        ${
+          infoPhotos.length
+            ? `<div class="hotel-detail-gallery">
+                ${infoPhotos.map((url, index) => `
+                  <img
+                    src="${escapeHtml(url)}"
+                    alt="${escapeHtml(h.name)} photo ${index + 1}"
+                    loading="lazy"
+                    class="hotel-detail-info-thumb"
+                    onclick="document.querySelector('.hotel-detail-tab[data-tab=photos]')?.click()"
+                  >
+                `).join("")}
+              </div>`
+            : ""
         }
       </div>
     `;
@@ -3303,10 +3397,23 @@ function renderHotelDetailTabContent(h, tab){
   }
 
   if(tab === "rooms"){
+    const stayMeta = (h.checkInTime || h.checkOutTime)
+      ? `<div class="hotel-detail-room-meta">
+          ${h.checkInTime ? `Check-in from ${escapeHtml(h.checkInTime)}` : ""}${(h.checkInTime && h.checkOutTime) ? " · " : ""}${h.checkOutTime ? `Check-out by ${escapeHtml(h.checkOutTime)}` : ""}
+        </div>`
+      : "";
+
     html = `
       <div class="hotel-detail-section">
         <h3>Rooms</h3>
-        ${rooms || "<div class=\"hotel-detail-room-meta\">Room information unavailable.</div>"}
+        ${stayMeta}
+        ${
+          rooms
+            ? rooms
+            : `<div class="hotel-detail-room-meta">
+                Specific room types aren't listed for this property yet — pricing shown is the lowest available rate per night.
+              </div>`
+        }
       </div>
     `;
   }
@@ -3323,8 +3430,8 @@ function renderHotelDetailTabContent(h, tab){
   if(tab === "photos"){
     const photos = Array.isArray(h.images)
       ? h.images
-          .filter(image => image && image.path)
-          .map(image => `https://photos.hotelbeds.com/giata/${image.path}`)
+          .map(image => typeof image === "string" ? image : (image && image.path ? `https://photos.hotelbeds.com/giata/${image.path}` : null))
+          .filter(Boolean)
           .filter((url, index, arr) => arr.indexOf(url) === index)
           .slice(0, 12)
       : [];
@@ -3612,9 +3719,9 @@ function renderList(){
       h._matchPct = r.pct; h._matches = r.matches;
     });
   }
-  const destinationHotels = state.selectedDestination === "Lagos"
+  const destinationHotels = state.liveApiResults
     ? HOTELS
-    : [];
+    : (state.selectedDestination === "Lagos" ? HOTELS : []);
 
   const visible = sortHotels(destinationHotels.filter(passesFilters));
   const panel = document.getElementById("listPanel");
@@ -3633,7 +3740,7 @@ function renderList(){
 
   if(visible.length === 0){
 
-    const destinationEmptyState = state.selectedDestination !== "Lagos";
+    const destinationEmptyState = !state.liveApiResults && state.selectedDestination !== "Lagos";
 
     panel.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -3641,8 +3748,8 @@ function renderList(){
         destinationEmptyState
           ? `<div>Hotel inventory isn't connected for ${escapeHtml(state.selectedDestination)} yet.</div>
              <div style="font-size:12px;margin-top:4px;">We're expanding HotelIndice to more destinations.</div>`
-          : `<div>No hotels match these filters.</div>
-             <div style="font-size:12px;margin-top:4px;">Try widening the price or score range.</div>`
+          : `<div>No hotels found for that search.</div>
+             <div style="font-size:12px;margin-top:4px;">Try a different city or widen your filters.</div>`
       }
     </div>`;
 
@@ -4199,7 +4306,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
     document.getElementById("resultCount").textContent = "Searching…";
 
     const response = await fetch(
-      `http://localhost:3000/api/hotels?q=${encodeURIComponent(state.query)}`
+      `http://localhost:3000/api/hotels?source=serpapi&destination=${encodeURIComponent(state.query)}`
     );
 
     if(!response.ok){
@@ -4216,102 +4323,72 @@ nlSearch.addEventListener("keydown", async (event)=>{
 
     if(Array.isArray(data.hotels)){
       const liveHotels = data.hotels.map((h, index) => ({
-        id: `live-${h.hotelCode}-${index}`,
-        hotelCode: h.hotelCode,
-        name: h.hotelName,
+        id: `live-serpapi-${index}`,
+        hotelCode: null,
+        name: h.name,
         neighborhood: "",
-        kind: h.configuration?.roomType === "APT"
-          ? "Apartment"
-          : "Hotel",
+        kind: "Hotel",
 
-        lat: Number(h.latitude),
-        lng: Number(h.longitude),
+        lat: Number(h.coordinates?.latitude),
+        lng: Number(h.coordinates?.longitude),
 
         yearBuilt: null,
 
-        // Real Hotelbeds metadata
-        images: Array.isArray(h.images)
-          ? h.images
-          : [],
-        heroImage: Array.isArray(h.images) && h.images.length
-          ? `https://photos.hotelbeds.com/giata/${h.images[0].path}`
+        images: Array.isArray(h.photos) ? h.photos : [],
+        heroImage: Array.isArray(h.photos) && h.photos.length
+          ? h.photos[0]
           : null,
-        address: h.address || null,
-        city: h.city || null,
-        country: h.country || null,
-        category: h.category || null,
+        address: null,
+        city: state.query,
+        country: null,
+        category: null,
         description: h.description || null,
 
-        compositeScore: h.matchRank != null
-          ? Math.round((h.matchRank / 3) * 100)
+        compositeScore: h.rating != null
+          ? Math.round((h.rating / 5) * 100)
           : null,
 
         price: {
-          currency: h.currency || "EUR",
-          low: Number(h.pricePerNight || h.price || 0),
-          typical: Number(h.pricePerNight || h.price || 0)
+          currency: h.currency || "USD",
+          low: Number(h.price || 0),
+          typical: Number(h.price || 0)
         },
 
-        ratings: [],
+        ratings: h.rating != null
+          ? [["Google", h.rating, 5]]
+          : [],
 
         amenities: {
-          pool: {
-            present: h.facilitiesMapped?.pool === true,
-            confidence: "verified"
-          },
-          gym: {
-            present: h.facilitiesMapped?.gym === true,
-            confidence: "verified"
-          },
-          air_conditioning: {
-            present: h.facilitiesMapped?.air_conditioning === true,
-            confidence: "verified"
-          },
-
-          parking_free: {
-            present: h.facilitiesMapped?.parking === true,
-            confidence: "verified"
-          },
-          wifi_free: {
-            present: h.facilitiesMapped?.internet === true,
-            confidence: "verified"
-          },
-          breakfast_included: {
-            present: h.breakfastIncluded === true,
-            confidence: "verified"
-          }
+          pool: { present: (h.amenities || []).some(a => /pool/i.test(a)), confidence: "reported" },
+          gym: { present: (h.amenities || []).some(a => /gym|fitness/i.test(a)), confidence: "reported" },
+          air_conditioning: { present: (h.amenities || []).some(a => /air conditioning/i.test(a)), confidence: "reported" },
+          parking_free: { present: (h.amenities || []).some(a => /^parking$/i.test(a)), confidence: "reported" },
+          wifi_free: { present: (h.amenities || []).some(a => /free wi-?fi/i.test(a)), confidence: "reported" },
+          breakfast_included: { present: (h.amenities || []).some(a => /breakfast/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" }
         },
 
-        signals: h.signals || {},
+        signals: {
+          reviewSentiment: h.reviewSentiment || []
+        },
 
-        rooms: [{
-          name: h.roomName,
-          layout: h.configuration?.bedroomCount >= 2
-            ? "two_bedroom"
-            : "standard",
-          sleeps: h.capacity?.maxPax || 0,
-          sizeSqm: null,
-          limited: false,
-          beds: [],
-          roomType: h.configuration?.roomType || null,
-          characteristicCode: h.configuration?.characteristicCode || null,
-          roomFacilities: h.roomFacilities || []
-        }],
+        rooms: [],
 
-        hasFamilyRoom: h.facilitiesMapped?.familyRoom === true,
+        hasFamilyRoom: (h.amenities || []).some(a => /kid-friendly|family/i.test(a)),
         hasFamilyRoomLimited: false,
-        dataCompleteness: 1,
-        liveMatch: h.match,
-        matchRank: h.matchRank,
-        configuration: h.configuration,
-        breakfastIncluded: h.breakfastIncluded,
-        board: h.board,
-        totalStayPrice: h.totalStayPrice,
-        pricePerNight: h.pricePerNight,
-        rateKey: h.rateKey || null,
-        bookable: h.bookable === true,
-        allotment: h.allotment ?? null,
-        cancellationPolicies: h.cancellationPolicies || []
+        dataCompleteness: 0.6,
+        liveMatch: null,
+        matchRank: null,
+        configuration: null,
+        breakfastIncluded: null,
+        board: null,
+        totalStayPrice: h.totalPrice || null,
+        pricePerNight: h.price || null,
+        rateKey: null,
+        bookable: true,
+        allotment: null,
+        cancellationPolicies: [],
+        checkInTime: h.checkInTime || null,
+        checkOutTime: h.checkOutTime || null
       }));
 
       HOTELS.splice(0, HOTELS.length, ...liveHotels);
@@ -4491,6 +4568,74 @@ document.addEventListener("click", event => {
 
 buildMapArt();
 applyThemeButtons();
+async function loadFeaturedHotels(){
+  try {
+    const response = await fetch("http://localhost:3000/api/hotels/featured");
+    if(!response.ok) throw new Error(`Featured request failed: ${response.status}`);
+
+    const data = await response.json();
+
+    if(Array.isArray(data.hotels) && data.hotels.length){
+      const featuredHotels = data.hotels.map((h, index) => ({
+        id: `featured-${index}`,
+        hotelCode: null,
+        name: h.name,
+        neighborhood: h.featuredCity || "",
+        kind: "Hotel",
+        lat: Number(h.coordinates?.latitude),
+        lng: Number(h.coordinates?.longitude),
+        yearBuilt: null,
+        images: Array.isArray(h.photos) ? h.photos : [],
+        heroImage: Array.isArray(h.photos) && h.photos.length ? h.photos[0] : null,
+        address: null,
+        city: h.featuredCity || null,
+        country: null,
+        category: null,
+        description: h.description || null,
+        compositeScore: h.rating != null ? Math.round((h.rating / 5) * 100) : null,
+        price: {
+          currency: h.currency || "USD",
+          low: Number(h.price || 0),
+          typical: Number(h.price || 0)
+        },
+        ratings: h.rating != null ? [["Google", h.rating, 5]] : [],
+        amenities: {
+          pool: { present: (h.amenities || []).some(a => /pool/i.test(a)), confidence: "reported" },
+          gym: { present: (h.amenities || []).some(a => /gym|fitness/i.test(a)), confidence: "reported" },
+          air_conditioning: { present: (h.amenities || []).some(a => /air conditioning/i.test(a)), confidence: "reported" },
+          parking_free: { present: (h.amenities || []).some(a => /^parking$/i.test(a)), confidence: "reported" },
+          wifi_free: { present: (h.amenities || []).some(a => /free wi-?fi/i.test(a)), confidence: "reported" },
+          breakfast_included: { present: (h.amenities || []).some(a => /breakfast/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" }
+        },
+        signals: { reviewSentiment: h.reviewSentiment || [] },
+        rooms: [],
+        hasFamilyRoom: (h.amenities || []).some(a => /kid-friendly|family/i.test(a)),
+        hasFamilyRoomLimited: false,
+        dataCompleteness: 0.6,
+        liveMatch: null,
+        matchRank: null,
+        configuration: null,
+        breakfastIncluded: null,
+        board: null,
+        totalStayPrice: h.totalPrice || null,
+        pricePerNight: h.price || null,
+        rateKey: null,
+        bookable: true,
+        allotment: null,
+        cancellationPolicies: [],
+        checkInTime: h.checkInTime || null,
+        checkOutTime: h.checkOutTime || null
+      }));
+
+      HOTELS.splice(0, HOTELS.length, ...featuredHotels);
+      state.liveApiResults = true;
+    }
+  } catch (error) {
+    console.error("Failed to load featured hotels:", error.message);
+  }
+}
+
+await loadFeaturedHotels();
 renderList();
 setViewMode("map");
 window.addEventListener("resize", ()=>{ resetView(); });
