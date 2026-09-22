@@ -23,9 +23,17 @@ function setCachedSerpApiResult(key, data) {
 const fs = require("fs");
 const https = require("https");
 
+const hotelbedsCert = process.env.HOTELBEDS_CLIENT_CERT
+  ? Buffer.from(process.env.HOTELBEDS_CLIENT_CERT, "base64").toString("utf8")
+  : fs.readFileSync(path.join(__dirname, "hotelbeds-client-chain.pem"), "utf8");
+
+const hotelbedsKey = process.env.HOTELBEDS_CLIENT_KEY
+  ? Buffer.from(process.env.HOTELBEDS_CLIENT_KEY, "base64").toString("utf8")
+  : fs.readFileSync(path.join(__dirname, "hotelbeds-client.key"), "utf8");
+
 const hotelbedsAgent = new https.Agent({
-  cert: fs.readFileSync("./hotelbeds-client-chain.pem"),
-  key: fs.readFileSync("./hotelbeds-client.key"),
+  cert: hotelbedsCert,
+  key: hotelbedsKey,
   passphrase: process.env.HOTELBEDS_KEY_PASSPHRASE
 });
 
@@ -802,8 +810,12 @@ app.post("/api/review-requests", (req, res) => {
 
 app.use(express.static(path.join(__dirname, "..")));
 
-app.listen(PORT, () => {
-  console.log(
-    `HotelIndice API running at http://localhost:${PORT}`
-  );
-});
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () => {
+    console.log(
+      `HotelIndice API running at http://localhost:${PORT}`
+    );
+  });
+}
+
+module.exports = app;

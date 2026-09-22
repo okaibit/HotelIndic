@@ -4349,7 +4349,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
     document.getElementById("resultCount").textContent = "Searching…";
 
     const response = await fetch(
-      `http://localhost:3000/api/hotels?source=serpapi&destination=${encodeURIComponent(state.query)}`
+      `/api/hotels?source=serpapi&destination=${encodeURIComponent(state.query)}`
     );
 
     if(!response.ok){
@@ -4613,7 +4613,7 @@ buildMapArt();
 applyThemeButtons();
 async function loadFeaturedHotels(){
   try {
-    const response = await fetch("http://localhost:3000/api/hotels/featured");
+    const response = await fetch("/api/hotels/featured");
     if(!response.ok) throw new Error(`Featured request failed: ${response.status}`);
 
     const data = await response.json();
@@ -4702,7 +4702,7 @@ reviewForm?.addEventListener("submit", async (event) => {
   submitButton.textContent = "Sending...";
 
   try {
-    const response = await fetch("http://localhost:3000/api/review-requests", {
+    const response = await fetch("/api/review-requests", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
