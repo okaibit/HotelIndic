@@ -6,6 +6,7 @@ function normalizeSerpApiHotel(h) {
     totalPrice: h.total_rate?.extracted_lowest ?? null,
     currency: "USD",
     photos: (h.images || []).map(i => i.original_image).filter(Boolean),
+    thumbnails: (h.images || []).map(i => i.thumbnail).filter(Boolean),
     rating: h.overall_rating ?? null,
     reviewCount: h.reviews ?? null,
     amenities: h.amenities || [],

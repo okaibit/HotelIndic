@@ -3879,10 +3879,10 @@ function renderList(){
         </div>`
       : "";
 
-    const imageHtml = h.heroImage
+    const imageHtml = h.cardImage || h.heroImage
       ? `<div class="card-image">
           <img
-            src="${escapeHtml(h.heroImage)}"
+            src="${escapeHtml(h.cardImage || h.heroImage)}"
             alt="${escapeHtml(h.name)}"
             loading="lazy"
             onerror="this.parentElement.classList.add('image-failed')"
@@ -4378,8 +4378,12 @@ nlSearch.addEventListener("keydown", async (event)=>{
         yearBuilt: null,
 
         images: Array.isArray(h.photos) ? h.photos : [],
+        thumbnailImages: Array.isArray(h.thumbnails) ? h.thumbnails : [],
         heroImage: Array.isArray(h.photos) && h.photos.length
           ? h.photos[0]
+          : null,
+        cardImage: Array.isArray(h.thumbnails) && h.thumbnails.length
+          ? h.thumbnails[0]
           : null,
         address: null,
         city: state.query,
@@ -4629,7 +4633,9 @@ async function loadFeaturedHotels(){
         lng: Number(h.coordinates?.longitude),
         yearBuilt: null,
         images: Array.isArray(h.photos) ? h.photos : [],
+        thumbnailImages: Array.isArray(h.thumbnails) ? h.thumbnails : [],
         heroImage: Array.isArray(h.photos) && h.photos.length ? h.photos[0] : null,
+        cardImage: Array.isArray(h.thumbnails) && h.thumbnails.length ? h.thumbnails[0] : null,
         address: null,
         city: h.featuredCity || null,
         country: null,
