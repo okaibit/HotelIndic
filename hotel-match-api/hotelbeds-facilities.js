@@ -1,12 +1,31 @@
 require("dotenv").config();
 
 const fs = require("fs");
+const path = require("path");
+
 const { Agent } = require("undici");
+
+const hotelbedsCert = process.env.HOTELBEDS_CLIENT_CERT
+  ? Buffer.from(process.env.HOTELBEDS_CLIENT_CERT, "base64").toString("utf8")
+  : fs.readFileSync(
+      path.join(
+        __dirname,
+        "certificate-39e00eb4d82118becdb11aa32ae1b1a6f2bebd61eef2ed58b1cfe628b9638438.pem"
+      ),
+      "utf8"
+    );
+
+const hotelbedsKey = process.env.HOTELBEDS_CLIENT_KEY
+  ? Buffer.from(process.env.HOTELBEDS_CLIENT_KEY, "base64").toString("utf8")
+  : fs.readFileSync(
+      path.join(__dirname, "hotelbeds-client.key"),
+      "utf8"
+    );
 
 const hotelbedsDispatcher = new Agent({
   connect: {
-    cert: fs.readFileSync("./certificate-39e00eb4d82118becdb11aa32ae1b1a6f2bebd61eef2ed58b1cfe628b9638438.pem"),
-    key: fs.readFileSync("./hotelbeds-client.key"),
+    cert: hotelbedsCert,
+    key: hotelbedsKey,
     passphrase: process.env.HOTELBEDS_KEY_PASSPHRASE
   }
 });
