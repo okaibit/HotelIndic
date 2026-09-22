@@ -2073,6 +2073,7 @@ header{
         <button id="zoomIn" aria-label="Zoom in">+</button>
         <button id="zoomOut" aria-label="Zoom out">–</button>
         <button id="zoomReset" aria-label="Reset view">⟲</button>
+        <button id="mapLocate" aria-label="Find my location">⌖</button>
       </div>
     </div>
     <div class="list-panel" id="listPanel"></div>
@@ -2791,6 +2792,38 @@ function initRealMap(){
   realMap.on("zoomend moveend", ()=>{
     renderHotelMarkers();
     updateMapLegend();
+  });
+
+  realMap.on("locationfound", (e)=>{
+    const btn = document.getElementById("mapLocate");
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = "⌖";
+    }
+
+    L.marker(e.latlng, {
+      icon: L.divIcon({
+        className: "user-location-marker",
+        html: '<div class="user-location-dot"></div>',
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      })
+    }).addTo(realMap);
+
+    setTimeout(()=>{
+      renderHotelMarkers();
+      updateMapLegend();
+    }, 100);
+  });
+
+  realMap.on("locationerror", (e)=>{
+    const btn = document.getElementById("mapLocate");
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = "⌖";
+    }
+    console.error("Location error:", e.message);
+    alert("Couldn't get your location. Check that location access is allowed for this site.");
   });
 
   setTimeout(()=>{
@@ -3582,6 +3615,16 @@ document.getElementById("zoomOut").addEventListener("click", ()=>{
 });
 
 document.getElementById("zoomReset").addEventListener("click", resetView);
+
+document.getElementById("mapLocate").addEventListener("click", ()=>{
+  if(!realMap) return;
+
+  const btn = document.getElementById("mapLocate");
+  btn.disabled = true;
+  btn.textContent = "…";
+
+  realMap.locate({ setView: true, maxZoom: 13, enableHighAccuracy: true, timeout: 10000 });
+});
 
 /* ============================= FILTERING / SORTING ============================= */
 function passesFilters(h){
