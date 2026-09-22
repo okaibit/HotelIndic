@@ -3,19 +3,27 @@ const fs = require("fs");
 const https = require("https");
 const path = require("path");
 
-const hotelbedsCert = process.env.HOTELBEDS_CLIENT_CERT
-  ? Buffer.from(process.env.HOTELBEDS_CLIENT_CERT, "base64").toString("utf8")
-  : fs.readFileSync(path.join(__dirname, "hotelbeds-client-chain.pem"), "utf8");
+let hotelbedsAgent;
 
-const hotelbedsKey = process.env.HOTELBEDS_CLIENT_KEY
-  ? Buffer.from(process.env.HOTELBEDS_CLIENT_KEY, "base64").toString("utf8")
-  : fs.readFileSync(path.join(__dirname, "hotelbeds-client.key"), "utf8");
+function getHotelbedsAgent() {
+  if (hotelbedsAgent) return hotelbedsAgent;
 
-const hotelbedsAgent = new https.Agent({
-  cert: hotelbedsCert,
-  key: hotelbedsKey,
-  passphrase: process.env.HOTELBEDS_KEY_PASSPHRASE
-});
+  const hotelbedsCert = process.env.HOTELBEDS_CLIENT_CERT
+    ? Buffer.from(process.env.HOTELBEDS_CLIENT_CERT, "base64").toString("utf8")
+    : fs.readFileSync(path.join(__dirname, "hotelbeds-client-chain.pem"), "utf8");
+
+  const hotelbedsKey = process.env.HOTELBEDS_CLIENT_KEY
+    ? Buffer.from(process.env.HOTELBEDS_CLIENT_KEY, "base64").toString("utf8")
+    : fs.readFileSync(path.join(__dirname, "hotelbeds-client.key"), "utf8");
+
+  hotelbedsAgent = new https.Agent({
+    cert: hotelbedsCert,
+    key: hotelbedsKey,
+    passphrase: process.env.HOTELBEDS_KEY_PASSPHRASE
+  });
+
+  return hotelbedsAgent;
+}
 
 function hotelbedsContentRequest(url, options) {
   return new Promise((resolve, reject) => {
@@ -23,7 +31,7 @@ function hotelbedsContentRequest(url, options) {
       url,
       {
         ...options,
-        agent: hotelbedsAgent
+        agent: getHotelbedsAgent()
       },
       response => {
         let body = "";
