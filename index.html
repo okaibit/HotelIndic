@@ -68,6 +68,58 @@ document.addEventListener("DOMContentLoaded", function(){
   color:var(--ink);
 }
 
+.city-discovery-rail{
+  grid-column:1 / -1;
+  width:calc(100% + 40px);
+  margin-left:-20px;
+  margin-right:-20px;
+  overflow:hidden;
+  position:relative;
+  min-height:32px;
+  margin-top:8px;
+  margin-bottom:12px;
+  white-space:nowrap;
+  mask-image:linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+  -webkit-mask-image:linear-gradient(to right, transparent, black 7%, black 93%, transparent);
+}
+
+.city-discovery-track{
+  display:flex;
+  width:max-content;
+  flex-wrap:nowrap;
+  animation:cityDiscoveryScroll 18s linear infinite;
+}
+
+.city-discovery-set{
+  display:flex;
+  flex:0 0 auto;
+  width:max-content;
+  gap:18px;
+  padding-right:18px;
+  white-space:nowrap;
+}
+
+.city-discovery-set span{
+  cursor:pointer;
+  transition:all .2s ease;
+}
+
+.city-discovery-set span:hover{
+  color:var(--text);
+  border-color:var(--text);
+}
+
+.city-discovery-set span.active{
+  color:var(--text);
+  border-color:var(--text);
+  background:var(--bg-panel);
+}
+
+@keyframes cityDiscoveryScroll{
+  from{ transform:translateX(0); }
+  to{ transform:translateX(-50%); }
+}
+
 @media (max-width: 860px){
   header{
     display:flex !important;
@@ -80,12 +132,6 @@ document.addEventListener("DOMContentLoaded", function(){
   .currency-toggle{ order:2 !important; }
   .theme-toggle{ order:3 !important; }
   .search-wrap{ order:4 !important; flex:1 1 100% !important; width:100% !important; }
-  .trip-purpose{
-    order:5 !important;
-    flex:1 1 100% !important;
-    overflow-x:auto !important;
-    scrollbar-width:none !important;
-  }
   .trip-purpose button,
   .trip-purpose-label{ flex-shrink:0 !important; }
   .map-viewport{ height:30vh !important; }
@@ -125,16 +171,22 @@ document.addEventListener("DOMContentLoaded", function(){
 .hotel-marker{
   display:flex;
   align-items:center;
-  gap:6px;
   background:#d4a72c;
   color:#17130a;
-  border:1px solid rgba(0,0,0,.22);
-  border-radius:8px;
-  padding:3px;
-  box-shadow:0 2px 8px rgba(0,0,0,.22);
+  border:1px solid rgba(0,0,0,.18);
+  border-radius:999px;
+  padding:7px 11px;
+  box-shadow:0 3px 10px rgba(0,0,0,.20);
   white-space:nowrap;
-  font-size:12px;
-  font-weight:600;
+  font-size:13px;
+  font-weight:700;
+  line-height:1;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+
+.hotel-marker:hover{
+  transform:translateY(-2px);
+  box-shadow:0 5px 14px rgba(0,0,0,.25);
 }
 
 .hotel-marker img{
@@ -1834,6 +1886,44 @@ header{
   margin-top:10px;
 }
 
+
+.hotel-detail-photo-gallery{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:14px;
+}
+
+.hotel-detail-photo-hero{
+  width:100%;
+  aspect-ratio:1 / 1;
+  overflow:hidden;
+  border-radius:12px;
+  background:var(--bg-panel);
+}
+
+.hotel-detail-photo-hero img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.hotel-detail-photo-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:10px;
+}
+
+.hotel-detail-photo-grid img{
+  width:100%;
+  aspect-ratio:1 / 1;
+  display:block;
+  object-fit:cover;
+  border-radius:10px;
+  background:var(--bg-panel);
+}
+
 .hotel-detail-gallery{
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -1884,6 +1974,97 @@ header{
 
 </style>
 
+
+<style id="traffic-desktop-control">
+#trafficToggleBtn {
+  min-width: 88px;
+  padding: 10px 14px;
+  border: 1px solid var(--border, #d9d9d9);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  color: var(--text, #222);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#trafficToggleBtn.active {
+  background: #1f6feb;
+  color: #fff;
+  border-color: #1f6feb;
+}
+
+@media (min-width: 900px) {
+  #trafficToggleBtn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+</style>
+
+
+<style id="traffic-map-legend-style">
+.traffic-map-legend {
+  min-width: 118px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--bg-panel);
+  color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0,0,0,.16);
+  font: 500 11px var(--font-ui);
+}
+
+.traffic-legend-title {
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.traffic-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 4px 0;
+  white-space: nowrap;
+}
+
+.traffic-dot {
+  width: 18px;
+  height: 4px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.traffic-green {
+  background: #2e9d59;
+}
+
+.traffic-yellow {
+  background: #f2c94c;
+}
+
+.traffic-red {
+  background: #d64545;
+}
+
+</style>
+<style id="traffic-leaflet-control-style">
+.traffic-leaflet-control button {
+  width: auto !important;
+  min-width: 82px;
+  padding: 0 10px;
+  font: 600 12px var(--font-ui);
+  color: var(--ink);
+  background: var(--bg-panel);
+  border: 0;
+  cursor: pointer;
+}
+
+.traffic-leaflet-control button.active {
+  background: var(--ink);
+  color: var(--bg-panel);
+}
+</style>
 </head>
 <body>
 
@@ -1970,10 +2151,82 @@ header{
 </div>
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="nlSearch" type="text" placeholder="Describe your trip — “family of 4, pool, breakfast, under ₦150,000” — or search by name" autocomplete="off">
+      <input id="nlSearch" type="text" placeholder="Find a stay that fits the way you travel" autocomplete="off">
       <div id="destinationSuggestions" class="destination-suggestions"></div>
       <button class="search-clear" id="searchClear">Clear</button>
     </div>
+
+    <div class="search-depth" id="searchDepth">
+      <label for="searchDepthSelect">Search depth</label>
+      <select id="searchDepthSelect">
+        <option value="20">Up to 20 hotels</option>
+        <option value="50">Up to 50 hotels</option>
+        <option value="100">Up to 100 hotels</option>
+        <option value="200">Up to 200 hotels</option>
+      </select>
+    </div>
+
+    <div class="city-discovery-rail" id="cityDiscoveryRail" aria-label="Explore destinations">
+      <div class="city-discovery-track">
+        <div class="city-discovery-set">
+          <span>London</span>
+          <span>Lagos</span>
+          <span>Paris</span>
+          <span>Mumbai</span>
+          <span>Amsterdam</span>
+          <span>Istanbul</span>
+          <span>Dubai</span>
+          <span>Tokyo</span>
+          <span>New York</span>
+          <span>São Paulo</span>
+          <span>Cape Town</span>
+          <span>Nairobi</span>
+          <span>Seoul</span>
+          <span>Mexico City</span>
+          <span>Abuja</span>
+          <span>Accra</span>
+          <span>Rio de Janeiro</span>
+          <span>Singapore</span>
+          <span>Toronto</span>
+          <span>Sydney</span>
+          <span>Cairo</span>
+          <span>Johannesburg</span>
+          <span>Rome</span>
+          <span>Barcelona</span>
+          <span>Bangkok</span>
+          <span>Lisbon</span>
+        </div>
+        <div class="city-discovery-set" aria-hidden="true">
+          <span>London</span>
+          <span>Lagos</span>
+          <span>Paris</span>
+          <span>Mumbai</span>
+          <span>Amsterdam</span>
+          <span>Istanbul</span>
+          <span>Dubai</span>
+          <span>Tokyo</span>
+          <span>New York</span>
+          <span>São Paulo</span>
+          <span>Cape Town</span>
+          <span>Nairobi</span>
+          <span>Seoul</span>
+          <span>Mexico City</span>
+          <span>Abuja</span>
+          <span>Accra</span>
+          <span>Rio de Janeiro</span>
+          <span>Singapore</span>
+          <span>Toronto</span>
+          <span>Sydney</span>
+          <span>Cairo</span>
+          <span>Johannesburg</span>
+          <span>Rome</span>
+          <span>Barcelona</span>
+          <span>Bangkok</span>
+          <span>Lisbon</span>
+        </div>
+      </div>
+    </div>
+
     <div class="trip-purpose" id="tripPurpose">
       <span class="trip-purpose-label">I'm travelling for</span>
       <button type="button" data-purpose="business">Business</button>
@@ -1986,20 +2239,19 @@ header{
     <div class="currency-toggle" id="currencyToggle">
       <label for="currencySelect">Currency</label>
       <select id="currencySelect" aria-label="Display currency">
-        <option value="NGN">₦ NGN</option>
         <option value="USD">$ USD</option>
+        <option value="NGN">₦ NGN</option>
         <option value="EUR">€ EUR</option>
         <option value="GBP">£ GBP</option>
         <option value="JPY">¥ JPY</option>
       </select>
     </div>
 
-    <div class="theme-toggle" id="themeToggle" role="group" aria-label="Day or night browsing">
-      <button id="btnLight" aria-label="Day">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/></svg>
-      </button>
-      <button id="btnDark" aria-label="Night">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a7 7 0 0 0 10.8 10.8Z"/></svg>
+    <div class="theme-toggle" id="themeToggle" aria-label="Switch theme">
+      <button id="themeSwitchBtn" type="button" aria-label="Switch to night mode">
+        <svg id="themeSwitchIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a7 7 0 0 0 10.8 10.8Z"/>
+        </svg>
       </button>
     </div>
     <button class="dropdown-btn" id="downloadBtn" style="display:none;" aria-label="Download this page">
@@ -2059,7 +2311,7 @@ header{
     <button class="reset-btn" id="resetBtn">Reset filters</button>
     <div class="result-meta">
       <div class="result-count" id="resultCount"></div>
-      <div class="inventory-status" id="inventoryStatus">Prototype inventory</div>
+      <div class="inventory-status" id="inventoryStatus">Search to explore hotels</div>
       <button class="review-inline-btn" type="button" id="requestReviewBtn">Request a hotel review</button>
   
     </div>
@@ -2130,9 +2382,8 @@ header{
     </div>
   </div>
 
-  <div class="view-toggle" id="viewToggle" aria-label="Choose view">
-      <button type="button" id="mapViewBtn" class="active">Map</button>
-      <button type="button" id="listViewBtn">List</button>
+  <div class="view-toggle" id="viewToggle" aria-label="Switch view">
+      <button type="button" id="viewSwitchBtn">List</button>
     </div>
 
   </div>
@@ -2155,7 +2406,6 @@ header{
 "use strict";
 
 /* ============================= DATA =============================
-   Seeded from seed-lagos.json. Synthetic fixture data — every
    property here is invented for prototyping and carries source
    "seed"; none of it describes a real hotel. */
 const AMENITY_LABELS = {
@@ -2169,8 +2419,22 @@ const AMENITY_LABELS = {
   childrens_pool:"Children's pool", cot_available:"Cot available",
   beach_access:"Beach access", meeting_rooms:"Meeting rooms", work_desk:"Work desk"
 };
-const FILTERABLE_AMENITIES = ["pool","wifi_free","breakfast_included","parking_free",
-  "backup_generator","gated_compound","gym","kids_club","beach_access"];
+const FILTERABLE_AMENITIES = [
+  "pool",
+  "wifi_free",
+  "breakfast_included",
+  "parking_free",
+  "gym",
+  "air_conditioning",
+  "restaurant",
+  "bar",
+  "kid_friendly",
+  "accessible",
+  "backup_generator",
+  "gated_compound",
+  "kids_club",
+  "beach_access"
+];
 
 const PROPERTY_TYPE_FILTERS = [
   {key:"hotel", label:"Hotel"},
@@ -2195,151 +2459,10 @@ const ROOM_SIZE_FILTERS = [
 
 const HOTEL_MARKER_IMAGE = "assets/og-image.jpg";
 
-const HOTELS = [
-  {id:"seed-lag-001", name:"Harmattan House Ikoyi", image:"assets/hotels/hotel-1.jpg", neighborhood:"Ikoyi", kind:"Boutique hotel", hotelType:"boutique", ownershipType:"independent",
-   lat:6.4498, lng:3.4342, yearBuilt:2016, heritage:false, compositeScore:76,
-   price:{currency:"₦", low:72000, typical:89000},
-   ratings:[["google",4.4,5],["booking",8.6,10]],
-   amenities:{pool:{present:true,confidence:"verified",detail:"Outdoor, 14m"}, wifi_free:{present:true,confidence:"corroborated"},
-     breakfast_included:{present:true,confidence:"corroborated",detail:"07:00–10:30"}, parking_free:{present:true,confidence:"claimed"},
-     backup_generator:{present:true,confidence:"verified",detail:"24h, automatic"}, gated_compound:{present:true,confidence:"verified"},
-     gym:{present:false,confidence:"corroborated"}, kids_club:{present:false,confidence:"claimed"}},
-   signals:{wifi_reliability:{score:61,polarized:true,trend:"declining"}, quietness:{score:88,polarized:false},
-     cleanliness:{score:84,polarized:false}, power_reliability:{score:91,polarized:false},
-     family_suitability:{score:70,polarized:false}, breakfast_quality:{score:73,polarized:false}},
-   rooms:[
-     {name:"Courtyard King", layout:"standard", sleeps:2, sizeSqm:32, limited:false, beds:[{type:"king",count:1}]},
-     {name:"Garden Family Suite", layout:"one_bedroom", sleeps:4, sizeSqm:58, limited:true, beds:[{type:"king",count:1},{type:"sofa_bed",count:1}]}
-   ],
-   tripFit:{
-     business:72,
-     wedding:58,
-     family:76,
-     leisure:68,
-     romantic:74
-   },
-   dataCompleteness:0.86},
+const HOTELS = [];
 
-  {id:"seed-lag-002", name:"The Oniru Strand", image:"assets/hotels/hotel-2.jpg", neighborhood:"Oniru", kind:"Resort", hotelType:"resort", ownershipType:"independent",
-   lat:6.4281, lng:3.4528, yearBuilt:2019, heritage:false, compositeScore:79,
-   price:{currency:"₦", low:145000, typical:182000},
-   ratings:[["google",4.5,5],["booking",8.9,10],["tripadvisor",4.0,5]],
-   amenities:{pool:{present:true,confidence:"verified",detail:"Two outdoor pools"}, childrens_pool:{present:true,confidence:"verified"},
-     beach_access:{present:true,confidence:"corroborated",detail:"7 min walk"}, wifi_free:{present:true,confidence:"corroborated"},
-     breakfast_included:{present:true,confidence:"verified",detail:"06:30–11:00"}, kids_club:{present:true,confidence:"claimed",detail:"Weekends only"},
-     parking_free:{present:true,confidence:"verified"}, backup_generator:{present:true,confidence:"corroborated"},
-     gym:{present:true,confidence:"verified"}},
-   signals:{wifi_reliability:{score:82,polarized:false}, quietness:{score:48,polarized:true,trend:"declining"},
-     family_suitability:{score:92,polarized:false}, breakfast_quality:{score:86,polarized:false},
-     value_for_money:{score:64,polarized:false}, power_reliability:{score:88,polarized:false}},
-   rooms:[
-     {name:"Deluxe Twin", layout:"standard", sleeps:4, sizeSqm:38, limited:false, beds:[{type:"double",count:2}]},
-     {name:"Two-Bedroom Ocean Suite", layout:"two_bedroom", sleeps:5, sizeSqm:96, limited:false, beds:[{type:"king",count:1},{type:"single",count:2}]}
-   ],
-   tripFit:{
-     business:65,
-     wedding:72,
-     family:88,
-     leisure:91,
-     romantic:86
-   },
-   dataCompleteness:0.93},
-
-  {id:"seed-lag-003", name:"Lekki Court Residences", image:"assets/hotels/hotel-3.jpg", neighborhood:"Lekki Phase 1", kind:"Serviced apartments", hotelType:"serviced_apartment", ownershipType:"independent",
-   lat:6.4408, lng:3.4721, yearBuilt:2021, heritage:false, compositeScore:81,
-   price:{currency:"₦", low:98000, typical:125000},
-   ratings:[["google",4.6,5]],
-   amenities:{pool:{present:true,confidence:"verified",detail:"Rooftop, shared"}, wifi_free:{present:true,confidence:"verified",detail:"Fibre"},
-     breakfast_included:{present:false,confidence:"corroborated"}, parking_free:{present:true,confidence:"verified"},
-     backup_generator:{present:true,confidence:"verified",detail:"24h"}, borehole_water:{present:true,confidence:"claimed"},
-     gated_compound:{present:true,confidence:"verified"}, security_24h:{present:true,confidence:"verified"},
-     work_desk:{present:true,confidence:"verified"}, gym:{present:true,confidence:"disputed"}},
-   signals:{wifi_reliability:{score:90,polarized:false}, quietness:{score:76,polarized:false},
-     power_reliability:{score:94,polarized:false}, checkin_friction:{score:55,polarized:true},
-     location_convenience:{score:58,polarized:false}},
-   rooms:[
-     {name:"Two-Bedroom Apartment", layout:"two_bedroom", sleeps:4, sizeSqm:82, limited:false, beds:[{type:"queen",count:1},{type:"single",count:2}]},
-     {name:"Three-Bedroom Apartment", layout:"apartment", sleeps:6, sizeSqm:128, limited:true, beds:[{type:"queen",count:2},{type:"single",count:2}]}
-   ],
-   tripFit:{
-     business:70,
-     wedding:84,
-     family:90,
-     leisure:94,
-     romantic:92
-   },
-   dataCompleteness:0.74},
-
-  {id:"seed-lag-004", name:"Ikeja GRA Parkview Hotel", image:"assets/hotels/hotel-4.jpg", neighborhood:"Ikeja GRA", kind:"Hotel", hotelType:"hotel", ownershipType:"independent",
-   lat:6.5793, lng:3.3506, yearBuilt:2009, heritage:false, compositeScore:60,
-   price:{currency:"₦", low:46000, typical:58000},
-   ratings:[["google",4.0,5],["booking",7.8,10]],
-   amenities:{pool:{present:false,confidence:"corroborated"}, wifi_free:{present:true,confidence:"claimed"},
-     breakfast_included:{present:true,confidence:"claimed",detail:"07:00–10:00"}, airport_shuttle:{present:true,confidence:"verified",detail:"Free"},
-     parking_free:{present:true,confidence:"verified"}, backup_generator:{present:true,confidence:"claimed",detail:"Hours unconfirmed"},
-     restaurant:{present:true,confidence:"verified"}, meeting_rooms:{present:true,confidence:"verified"}},
-   signals:{wifi_reliability:{score:44,polarized:false,trend:"declining"}, quietness:{score:52,polarized:true},
-     cleanliness:{score:66,polarized:false}, value_for_money:{score:81,polarized:false},
-     power_reliability:{score:62,polarized:true}},
-   rooms:[
-     {name:"Standard Double", layout:"standard", sleeps:2, sizeSqm:28, limited:false, beds:[{type:"double",count:1}]},
-     {name:"Executive Room", layout:"standard", sleeps:2, sizeSqm:36, limited:false, beds:[{type:"king",count:1}]}
-   ],
-   tripFit:{
-     business:78,
-     wedding:60,
-     family:82,
-     leisure:65,
-     romantic:58
-   },
-   dataCompleteness:0.68},
-
-  {id:"seed-lag-005", name:"Victoria Island Meridian Suites", image:"assets/hotels/hotel-5.jpg", neighborhood:"Victoria Island", kind:"Hotel · Meridian Collection", hotelType:"hotel", ownershipType:"chain",
-   lat:6.4281, lng:3.4219, yearBuilt:2013, heritage:false, compositeScore:85,
-   price:{currency:"₦", low:310000, typical:395000},
-   ratings:[["google",4.7,5],["booking",9.1,10],["tripadvisor",4.5,5]],
-   amenities:{pool:{present:true,confidence:"verified",detail:"Rooftop, heated"}, spa:{present:true,confidence:"verified"},
-     gym:{present:true,confidence:"verified"}, wifi_free:{present:true,confidence:"verified"},
-     breakfast_available:{present:true,confidence:"verified",detail:"₦18,000pp, not included"}, breakfast_included:{present:false,confidence:"corroborated"},
-     parking_free:{present:false,confidence:"corroborated"}, backup_generator:{present:true,confidence:"verified",detail:"24h, dual redundancy"},
-     meeting_rooms:{present:true,confidence:"verified"}, kids_club:{present:false,confidence:"corroborated"}},
-   signals:{wifi_reliability:{score:93,polarized:false}, quietness:{score:71,polarized:false},
-     cleanliness:{score:91,polarized:false}, staff_service:{score:88,polarized:false},
-     value_for_money:{score:49,polarized:false,trend:"declining"}, family_suitability:{score:54,polarized:false},
-     power_reliability:{score:97,polarized:false}},
-   rooms:[
-     {name:"Superior King", layout:"standard", sleeps:2, sizeSqm:42, limited:false, beds:[{type:"king",count:1}]},
-     {name:"Connecting Superior Rooms", layout:"connecting_rooms", sleeps:6, sizeSqm:84, limited:true, beds:[{type:"king",count:1},{type:"double",count:2}]}
-   ],
-   tripFit:{
-     business:91,
-     wedding:74,
-     family:68,
-     leisure:62,
-     romantic:61
-   },
-   dataCompleteness:0.96},
-
-  {id:"seed-lag-006", name:"Yaba Station Guesthouse", image:"assets/hotels/hotel-6.jpg", neighborhood:"Yaba", kind:"Guesthouse", hotelType:"guesthouse", ownershipType:"independent",
-   lat:6.5095, lng:3.3711, yearBuilt:null, heritage:false, compositeScore:null,
-   price:{currency:"₦", low:24000, typical:31000},
-   ratings:[["google",3.8,5]],
-   amenities:{wifi:{present:true,confidence:"claimed"}, air_conditioning:{present:true,confidence:"claimed"},
-     parking:{present:true,confidence:"claimed"}, pool:{present:false,confidence:"unknown"},
-     backup_generator:{present:true,confidence:"claimed",detail:"Evenings only, per listing"}},
-   signals:{value_for_money:{score:74,polarized:false}, cleanliness:{score:58,polarized:true}},
-   rooms:[
-     {name:"Double Room", layout:"standard", sleeps:2, sizeSqm:24, limited:false, beds:[{type:"double",count:1}]}
-   ],
-   tripFit:{
-     business:58,
-     wedding:55,
-     family:72,
-     leisure:70,
-     romantic:64
-   },
-   dataCompleteness:0.31}
-];
+// Live SerpApi inventory is the source of truth.
+HOTELS.splice(0, HOTELS.length);
 
 /* ============================= ROOM CLASSIFICATION =============================
    "Family Room" is a bed-configuration classification, not a layout label:
@@ -2386,6 +2509,7 @@ const state = {
   heritageOnly:false,
   sort:"match",
   query:"",
+  searchLimit:20,
   parsedQuery:null,
   selectedDestination:"Lagos",
   tripPurpose:"",
@@ -2408,6 +2532,16 @@ const state = {
 
 let currencyRates = null;
 let currencyRatesLoading = false;
+
+const searchDepthSelect = document.getElementById("searchDepthSelect");
+
+if(searchDepthSelect){
+  searchDepthSelect.value = String(state.searchLimit);
+
+  searchDepthSelect.addEventListener("change", () => {
+    state.searchLimit = Number(searchDepthSelect.value) || 20;
+  });
+}
 
 const currencySelect = document.getElementById("currencySelect");
 
@@ -2763,6 +2897,86 @@ function initRealMap(){
   // Show static hotel price markers immediately on first map load.
   renderHotelMarkers();
 
+  let trafficLayer = null;
+
+  function setTrafficEnabled(enabled){
+    const button = document.getElementById("trafficToggleBtn");
+    if(!realMap || !button) return;
+
+    if(enabled){
+      if(!trafficLayer){
+        trafficLayer = L.tileLayer(
+          "/api/traffic/tiles/{z}/{x}/{y}",
+          {
+            opacity: 0.95,
+            maxZoom: 18,
+            zIndex: 400,
+            attribution: '&copy; TomTom'
+          }
+        );
+      }
+
+      trafficLayer.addTo(realMap);
+
+      button.classList.add("active");
+      button.setAttribute("aria-pressed", "true");
+    } else {
+      if(trafficLayer && realMap.hasLayer(trafficLayer)){
+        realMap.removeLayer(trafficLayer);
+      }
+
+      button.classList.remove("active");
+      button.setAttribute("aria-pressed", "false");
+    }
+  }
+
+
+  const trafficControl = L.control({ position: "topright" });
+
+  trafficControl.onAdd = function(){
+    const container = L.DomUtil.create("div", "leaflet-bar traffic-leaflet-control");
+    const button = L.DomUtil.create("button", "", container);
+    button.id = "trafficToggleBtn";
+
+    button.type = "button";
+    button.textContent = "Traffic";
+    button.title = "Toggle traffic";
+    button.setAttribute("aria-label", "Toggle traffic");
+    button.setAttribute("aria-pressed", "false");
+
+    L.DomEvent.disableClickPropagation(container);
+
+    button.addEventListener("click", ()=>{
+      const enabled = button.getAttribute("aria-pressed") !== "true";
+
+      setTrafficEnabled(enabled);
+
+      button.setAttribute("aria-pressed", String(enabled));
+      button.classList.toggle("active", enabled);
+    });
+
+    return container;
+  };
+
+  trafficControl.addTo(realMap);
+
+  const trafficLegend = L.control({ position: "bottomright" });
+
+  trafficLegend.onAdd = function(){
+    const container = L.DomUtil.create("div", "traffic-map-legend");
+    container.innerHTML = `
+      <div class="traffic-legend-title">Traffic</div>
+      <div class="traffic-legend-row"><span class="traffic-dot traffic-green"></span> Free flow</div>
+      <div class="traffic-legend-row"><span class="traffic-dot traffic-yellow"></span> Slow</div>
+      <div class="traffic-legend-row"><span class="traffic-dot traffic-red"></span> Heavy</div>
+    `;
+
+    L.DomEvent.disableClickPropagation(container);
+    return container;
+  };
+
+  trafficLegend.addTo(realMap);
+
   const mapTiles = L.tileLayer(
     "https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=auf0D60b0dQGfvYUBn8Y&language=en",
     {
@@ -2973,16 +3187,12 @@ function closeHotelDetail(){
     const cta = e.target.closest("#hotelDetailCta");
     if(!cta) return;
 
-    const hotel = HOTELS.find(h => h.id === cta.dataset.hotelId);
+    const hotelId = cta.dataset.hotelId;
+    const hotel = HOTELS.find(h => h.id === hotelId);
     if(!hotel) return;
 
-    if(hotel.bookingUrl){
-      window.open(hotel.bookingUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-
-    cta.textContent = "Booking link coming soon";
-    cta.disabled = true;
+    closeHotelDetail();
+    openPriceCompare(hotelId);
   });
 
   overlay.addEventListener("click", (e)=>{
@@ -3152,15 +3362,15 @@ function openHotelDetail(id){
         </h2>
 
         <div class="hotel-detail-location">
-          ${escapeHtml(h.neighborhood)} · Lagos, Nigeria
+          ${escapeHtml(h.neighborhood || h.city || "Location shown on map")}
         </div>
 
         <div class="hotel-detail-score">
           <div class="hotel-detail-score-number">
-            ${Number(h.compositeScore)}/100
+            ${h.ratings?.[0]?.[1] != null ? Number(h.ratings[0][1]).toFixed(1) + "/5" : "—"}
           </div>
           <div class="hotel-detail-score-copy">
-            HotelIndice score
+            Google rating
           </div>
         </div>
 
@@ -3186,7 +3396,7 @@ function openHotelDetail(id){
 
               <div class="hotel-detail-price">
                 ${fmtMoney(h.price.typical, h.price.currency)}
-                <span>/ night, typical</span>
+                <span>/ night</span>
               </div>
 
               ${
@@ -3299,49 +3509,92 @@ function renderHotelDetailTabContent(h, tab){
         .join("");
 
   if(tab === "info"){
-    const infoPhotos = Array.isArray(h.images)
-      ? h.images
-          .map(image => typeof image === "string" ? image : (image && image.path ? `https://photos.hotelbeds.com/giata/${image.path}` : null))
-          .filter(Boolean)
-          .filter((url, index, arr) => arr.indexOf(url) === index)
-          .slice(0, 6)
-      : [];
+    const rating = h.ratings?.[0];
+    const ratingValue = rating?.[1] != null ? Number(rating[1]).toFixed(1) : null;
+    const reviewCount = rating?.[3] || 0;
+
+    const checkin = h.checkInTime
+      ? `Check-in from ${escapeHtml(h.checkInTime)}`
+      : "";
+
+    const checkout = h.checkOutTime
+      ? `Check-out by ${escapeHtml(h.checkOutTime)}`
+      : "";
+
+    const keyAmenities = Object.entries(h.amenities || {})
+      .filter(([_, value]) => value && value.present)
+      .slice(0, 6)
+      .map(([key]) => {
+        const label = amenityNames[key] || key.replace(/_/g, " ");
+        return `<span class="hotel-detail-tag">${escapeHtml(label)}</span>`;
+      })
+      .join("");
 
     html = `
       <div class="hotel-detail-section">
-        <h3>Info</h3>
 
         <div class="hotel-detail-price">
-          ${fmtMoney(h.price.typical, h.price.currency)}
-          <span>/ night, typical</span>
+          ${fmtMoney(h.price?.typical, h.price?.currency)}
+          <span>/ night</span>
         </div>
 
         ${
-          h.description
-            ? `<details class="hotel-detail-description-box">
-                <summary>About this hotel</summary>
-                <div class="hotel-detail-description">${escapeHtml(h.description)}</div>
-              </details>`
-            : `<div class="hotel-detail-room-meta">
-                Explore this hotel's rooms, amenities, signals and matching details using the tabs above.
-              </div>`
+          ratingValue
+            ? `
+              <div class="hotel-detail-info-rating">
+                <strong>${ratingValue}/5</strong>
+                <span>Google</span>
+                ${reviewCount ? `<span>· ${reviewCount.toLocaleString()} reviews</span>` : ""}
+              </div>
+            `
+            : ""
         }
 
         ${
-          infoPhotos.length
-            ? `<div class="hotel-detail-gallery">
-                ${infoPhotos.map((url, index) => `
-                  <img
-                    src="${escapeHtml(url)}"
-                    alt="${escapeHtml(h.name)} photo ${index + 1}"
-                    loading="lazy"
-                    class="hotel-detail-info-thumb"
-                    onclick="document.querySelector('.hotel-detail-tab[data-tab=photos]')?.click()"
-                  >
-                `).join("")}
-              </div>`
+          h.description
+            ? `
+              <div class="hotel-detail-description">
+                ${escapeHtml(h.description)}
+              </div>
+            `
+            : `
+              <div class="hotel-detail-room-meta">
+                Hotel information is supplied by the connected search provider.
+              </div>
+            `
+        }
+
+        ${
+          checkin || checkout
+            ? `
+              <div class="hotel-detail-info-meta">
+                ${checkin ? `<span>${checkin}</span>` : ""}
+                ${checkout ? `<span>${checkout}</span>` : ""}
+              </div>
+            `
             : ""
         }
+
+        ${
+          keyAmenities
+            ? `
+              <div class="hotel-detail-info-block">
+                <h3>Highlights</h3>
+                <div class="hotel-detail-tags">
+                  ${keyAmenities}
+                </div>
+              </div>
+            `
+            : ""
+        }
+
+        <div class="hotel-detail-info-block">
+          <h3>Explore more</h3>
+          <div class="hotel-detail-room-meta">
+            Browse the other tabs for rooms, amenities, review signals, photos and matching details.
+          </div>
+        </div>
+
       </div>
     `;
   }
@@ -3393,7 +3646,7 @@ function renderHotelDetailTabContent(h, tab){
               `
               : `
                 <div class="hotel-detail-room-meta">
-                  This score is based on the available hotel data and matching signals.
+                  Explore the available hotel details, amenities and review signals before comparing offers.
                 </div>
               `
         }
@@ -3444,7 +3697,7 @@ function renderHotelDetailTabContent(h, tab){
           rooms
             ? rooms
             : `<div class="hotel-detail-room-meta">
-                Specific room types aren't listed for this property yet — pricing shown is the lowest available rate per night.
+                Specific room types aren't listed for this property yet.
               </div>`
         }
       </div>
@@ -3476,14 +3729,32 @@ function renderHotelDetailTabContent(h, tab){
         ${
           photos.length
             ? `
-              <div class="hotel-detail-gallery">
-                ${photos.map((url, index) => `
+              <div class="hotel-detail-photo-gallery">
+                <div class="hotel-detail-photo-hero">
                   <img
-                    src="${escapeHtml(url)}"
-                    alt="${escapeHtml(h.name)} photo ${index + 1}"
-                    loading="lazy"
+                    src="${escapeHtml(photos[0])}"
+                    alt="${escapeHtml(h.name)}"
+                    loading="eager"
                   >
-                `).join("")}
+                </div>
+
+                ${
+                  photos.length > 1
+                    ? `
+                      <div class="hotel-detail-photo-grid">
+                        ${photos.slice(1).map((url, index) => `
+                          <img
+                            src="${escapeHtml(url)}"
+                            alt="${escapeHtml(h.name)} photo ${index + 2}"
+                            loading="lazy"
+                            class="hotel-detail-photo-thumb"
+                            onclick="this.closest('.hotel-detail-photo-gallery').querySelector('.hotel-detail-photo-hero img').src=this.src"
+                          >
+                        `).join("")}
+                      </div>
+                    `
+                    : ""
+                }
               </div>
             `
             : `
@@ -3499,14 +3770,9 @@ function renderHotelDetailTabContent(h, tab){
   if(tab === "data"){
     html = `
       <div class="hotel-detail-section">
-        <h3>Data coverage</h3>
-
-        <div class="hotel-detail-price">
-          ${Math.round(Number(h.dataCompleteness || 0) * 100)}%
-        </div>
-
+        <h3>Data source</h3>
         <div class="hotel-detail-room-meta">
-          of the available hotel profile is covered.
+          Hotel information is supplied by the connected search provider.
         </div>
       </div>
     `;
@@ -3762,9 +4028,7 @@ function renderList(){
       h._matchPct = r.pct; h._matches = r.matches;
     });
   }
-  const destinationHotels = state.liveApiResults
-    ? HOTELS
-    : (state.selectedDestination === "Lagos" ? HOTELS : []);
+  const destinationHotels = HOTELS;
 
   const visible = sortHotels(destinationHotels.filter(passesFilters));
   const panel = document.getElementById("listPanel");
@@ -3778,12 +4042,12 @@ function renderList(){
     inventoryStatus.textContent =
       state.liveApiResults
         ? "Live availability"
-        : "Prototype inventory";
+        : "Search to explore hotels";
   }
 
   if(visible.length === 0){
 
-    const destinationEmptyState = !state.liveApiResults && state.selectedDestination !== "Lagos";
+    const destinationEmptyState = !state.liveApiResults;
 
     panel.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -3802,14 +4066,16 @@ function renderList(){
 
   panel.innerHTML = visible.map(h=>{
     const scoreVal = state.liveApiResults
-      ? (h.matchRank != null ? Math.round((h.matchRank / 3) * 100) : null)
+      ? (h.compositeScore != null ? Math.round(h.compositeScore) : null)
       : (state.parsedQuery
           ? h._matchPct
           : getTripAdjustedScore(h));
 
     const scoreLbl = state.liveApiResults
-      ? "match"
-      : (state.parsedQuery ? "match" : (h.compositeScore==null ? "no score" : "score"));
+      ? "rating"
+      : (state.parsedQuery
+          ? "match"
+          : (h.compositeScore == null ? "no score" : "rating"));
 
     const scoreHtml = scoreVal == null
       ? `<div class="score-chip na"><div class="num">N/A</div><div class="lbl">no score</div></div>`
@@ -3819,9 +4085,10 @@ function renderList(){
           ${state.tripPurpose ? `<div class="score-context">trip-adjusted</div>` : ""}
         </div>`;
 
-    const ratingPills = h.ratings.map(([src,val,scale])=>{
+    const ratingPills = h.ratings.map(([src,val,scale,count])=>{
       const norm = Math.round((val/scale)*100);
-      return `<span class="rating-pill">${src} · ${norm}</span>`;
+      const reviews = count ? ` · ${count.toLocaleString()} reviews` : "";
+      return `<span class="rating-pill">${src} · ${norm}${reviews}</span>`;
     }).join("");
 
     const familyTag = h.hasFamilyRoom
@@ -3897,7 +4164,7 @@ function renderList(){
       <div class="card-top">
         <div>
           <div class="card-title">${h.name}</div>
-          <div class="card-sub">${h.neighborhood} · ${h.kind}${h.yearBuilt?` · built ${h.yearBuilt}`:""}</div>
+          <div class="card-sub">${escapeHtml(h.neighborhood || h.city || "Location shown on map")} · ${escapeHtml(h.kind || "Hotel")}${h.yearBuilt?` · built ${h.yearBuilt}`:""}</div>
         </div>
         ${scoreHtml}${buildTripFitHtml(h)}
       </div>
@@ -3908,7 +4175,7 @@ function renderList(){
       </div>
       ${roomListHtml}
       <div class="price-row">
-        <div class="price"><b>${fmtMoney(h.price.typical, h.price.currency)}</b><span class="per"> / night, typical</span></div>
+        <div class="price"><b>${fmtMoney(h.price.typical, h.price.currency)}</b><span class="per"> / night</span></div>
         <div class="card-actions">
           <button class="btn-ghost why-btn" data-id="${h.id}">Why this hotel?</button>
           <button class="btn-primary check-price-btn" data-id="${h.id}">Check price</button>
@@ -3937,6 +4204,299 @@ function renderList(){
 }
 
 /* ============================= FILTER UI WIRING ============================= */
+
+const ALL_ROOM_TYPE_FILTERS = [
+  {key:"family_room", label:"Family Room", sub:"King + two singles, or king + sofa bed"},
+  {key:"one_bedroom", label:"One-bedroom suite"},
+  {key:"two_bedroom", label:"Two-bedroom"},
+  {key:"apartment", label:"Multi-bedroom apartment"},
+  {key:"connecting_rooms", label:"Connecting rooms"}
+];
+
+function getAvailableRoomTypeFilters(){
+  const availableLayouts = new Set();
+
+  HOTELS.forEach(h => {
+    (h.rooms || []).forEach(room => {
+      if(room.layout){
+        availableLayouts.add(room.layout);
+      }
+    });
+  });
+
+  return ALL_ROOM_TYPE_FILTERS.filter(filter =>
+    filter.key === "family_room" ||
+    availableLayouts.has(filter.key)
+  );
+}
+
+function updateFilterCapabilities(){
+  const hotels = Array.isArray(HOTELS) ? HOTELS : [];
+
+  const capabilities = {
+    roomTypes: hotels.some(h => Array.isArray(h.rooms) && h.rooms.length > 0),
+    roomSizes: hotels.some(h =>
+      Array.isArray(h.rooms) &&
+      h.rooms.some(r => Number.isFinite(r.sizeSqm))
+    ),
+    propertyTypes: hotels.some(h => !!h.hotelType),
+    ownershipTypes: hotels.some(h => !!h.ownershipType),
+    heritage: hotels.some(h => h.heritage === true || h.heritage === false)
+  };
+
+  const availableAmenities = new Set();
+
+  hotels.forEach(h => {
+    Object.entries(h.amenities || {}).forEach(([key, value]) => {
+      if(value && value.present){
+        availableAmenities.add(key);
+      }
+    });
+  });
+
+  const roomTypePanel = document.getElementById("roomTypePanel");
+
+  if(roomTypePanel){
+    const availableRoomTypes = getAvailableRoomTypeFilters();
+
+    roomTypePanel.innerHTML = availableRoomTypes.map(f =>
+      `<label class="amenity-item${f.key === "family_room" ? " featured" : ""}">
+        <input type="checkbox" value="${f.key}" ${state.roomTypes.has(f.key) ? "checked" : ""}>
+        <span class="item-copy">
+          ${f.label}
+          ${f.sub ? `<span class="item-sub">${f.sub}</span>` : ""}
+        </span>
+      </label>`
+    ).join("");
+
+    roomTypePanel.querySelectorAll("input").forEach(cb => {
+      cb.addEventListener("change", ()=>{
+        if(cb.checked) state.roomTypes.add(cb.value);
+        else state.roomTypes.delete(cb.value);
+
+        const count = document.getElementById("roomTypeCount");
+        count.textContent = state.roomTypes.size;
+        count.style.display = state.roomTypes.size ? "flex" : "none";
+
+        renderList();
+        renderHotelMarkers();
+        updateMapLegend();
+      });
+    });
+
+    for(const key of [...state.roomTypes]){
+      if(!availableRoomTypes.some(f => f.key === key)){
+        state.roomTypes.delete(key);
+      }
+    }
+
+    const count = document.getElementById("roomTypeCount");
+    count.textContent = state.roomTypes.size;
+    count.style.display = state.roomTypes.size ? "flex" : "none";
+  }
+
+  const roomSizePanel = document.getElementById("roomSizePanel");
+
+  if(roomSizePanel){
+    const availableRoomSizes = ROOM_SIZE_FILTERS.filter(filter =>
+      hotels.some(h =>
+        Array.isArray(h.rooms) &&
+        h.rooms.some(room => {
+          const size = Number(room.sizeSqm);
+          return Number.isFinite(size) &&
+            size >= filter.min &&
+            size <= filter.max;
+        })
+      )
+    );
+
+    roomSizePanel.innerHTML = availableRoomSizes.map(f =>
+      `<label class="amenity-item">
+        <input type="checkbox" value="${f.key}" ${state.roomSizes.has(f.key) ? "checked" : ""}>
+        <span class="item-copy">${f.label}</span>
+      </label>`
+    ).join("");
+
+    roomSizePanel.querySelectorAll("input").forEach(cb => {
+      cb.addEventListener("change", ()=>{
+        if(cb.checked) state.roomSizes.add(cb.value);
+        else state.roomSizes.delete(cb.value);
+
+        const count = document.getElementById("roomSizeCount");
+        count.textContent = state.roomSizes.size;
+        count.style.display = state.roomSizes.size ? "flex" : "none";
+
+        renderList();
+        renderHotelMarkers();
+        updateMapLegend();
+      });
+    });
+
+    for(const key of [...state.roomSizes]){
+      if(!availableRoomSizes.some(f => f.key === key)){
+        state.roomSizes.delete(key);
+      }
+    }
+
+    const count = document.getElementById("roomSizeCount");
+    count.textContent = state.roomSizes.size;
+    count.style.display = state.roomSizes.size ? "flex" : "none";
+  }
+
+  const propertyTypePanel = document.getElementById("propertyTypePanel");
+
+  if(propertyTypePanel){
+    const availablePropertyTypes = PROPERTY_TYPE_FILTERS.filter(filter =>
+      hotels.some(h => h.hotelType === filter.key)
+    );
+
+    propertyTypePanel.innerHTML = availablePropertyTypes.map(f =>
+      `<label class="amenity-item">
+        <input type="checkbox" value="${f.key}" ${state.propertyTypes.has(f.key) ? "checked" : ""}>
+        <span class="item-copy">${f.label}</span>
+      </label>`
+    ).join("");
+
+    propertyTypePanel.querySelectorAll("input").forEach(cb => {
+      cb.addEventListener("change", ()=>{
+        if(cb.checked) state.propertyTypes.add(cb.value);
+        else state.propertyTypes.delete(cb.value);
+
+        const count = document.getElementById("propertyTypeCount");
+        count.textContent = state.propertyTypes.size;
+        count.style.display = state.propertyTypes.size ? "flex" : "none";
+
+        renderList();
+        renderHotelMarkers();
+        updateMapLegend();
+      });
+    });
+
+    for(const key of [...state.propertyTypes]){
+      if(!availablePropertyTypes.some(f => f.key === key)){
+        state.propertyTypes.delete(key);
+      }
+    }
+
+    const count = document.getElementById("propertyTypeCount");
+    count.textContent = state.propertyTypes.size;
+    count.style.display = state.propertyTypes.size ? "flex" : "none";
+  }
+
+  const ownershipPanel = document.getElementById("ownershipPanel");
+
+  if(ownershipPanel){
+    const availableOwnershipTypes = OWNERSHIP_TYPE_FILTERS.filter(filter =>
+      hotels.some(h => h.ownershipType === filter.key)
+    );
+
+    ownershipPanel.innerHTML = availableOwnershipTypes.map(f =>
+      `<label class="amenity-item">
+        <input type="checkbox" value="${f.key}" ${state.ownershipTypes.has(f.key) ? "checked" : ""}>
+        <span class="item-copy">${f.label}</span>
+      </label>`
+    ).join("");
+
+    ownershipPanel.querySelectorAll("input").forEach(cb => {
+      cb.addEventListener("change", ()=>{
+        if(cb.checked) state.ownershipTypes.add(cb.value);
+        else state.ownershipTypes.delete(cb.value);
+
+        const count = document.getElementById("ownershipCount");
+        count.textContent = state.ownershipTypes.size;
+        count.style.display = state.ownershipTypes.size ? "flex" : "none";
+
+        renderList();
+        renderHotelMarkers();
+        updateMapLegend();
+      });
+    });
+
+    for(const key of [...state.ownershipTypes]){
+      if(!availableOwnershipTypes.some(f => f.key === key)){
+        state.ownershipTypes.delete(key);
+      }
+    }
+
+    const count = document.getElementById("ownershipCount");
+    count.textContent = state.ownershipTypes.size;
+    count.style.display = state.ownershipTypes.size ? "flex" : "none";
+  }
+
+  const heritageButton = document.getElementById("heritageBtn");
+
+  if(heritageButton){
+    const heritageAvailable = hotels.some(
+      h => h.heritage === true || h.heritage === false
+    );
+
+    heritageButton.style.display = heritageAvailable ? "" : "none";
+
+    if(!heritageAvailable){
+      state.heritageOnly = false;
+      heritageButton.classList.remove("active");
+    }
+  }
+
+  const filterButtons = {
+    roomTypes: document.getElementById("roomTypeBtn"),
+    roomSizes: document.getElementById("roomSizeBtn"),
+    propertyTypes: document.getElementById("propertyTypeBtn"),
+    ownershipTypes: document.getElementById("ownershipBtn"),
+    heritage: document.getElementById("heritageBtn")
+  };
+
+  Object.entries(filterButtons).forEach(([key, button]) => {
+    if(button){
+      button.style.display = capabilities[key] ? "" : "none";
+    }
+  });
+
+  const amenityPanel = document.getElementById("amenityPanel");
+
+  if(amenityPanel){
+    const visibleAmenities = FILTERABLE_AMENITIES.filter(
+      key => availableAmenities.has(key)
+    );
+
+    amenityPanel.innerHTML = visibleAmenities.map(key =>
+      `<label class="amenity-item">
+        <input type="checkbox" value="${key}">
+        ${AMENITY_LABELS[key] || key.replace(/_/g, " ")}
+      </label>`
+    ).join("");
+
+    amenityPanel.querySelectorAll("input").forEach(cb => {
+      cb.checked = state.amenities.has(cb.value);
+
+      cb.addEventListener("change", ()=>{
+        if(cb.checked) state.amenities.add(cb.value);
+        else state.amenities.delete(cb.value);
+
+        const count = document.getElementById("amenityCount");
+        count.textContent = state.amenities.size;
+        count.style.display = state.amenities.size ? "flex" : "none";
+
+        renderList();
+        renderHotelMarkers();
+        updateMapLegend();
+      });
+    });
+
+    for(const key of [...state.amenities]){
+      if(!visibleAmenities.includes(key)){
+        state.amenities.delete(key);
+      }
+    }
+
+    const count = document.getElementById("amenityCount");
+    count.textContent = state.amenities.size;
+    count.style.display = state.amenities.size ? "flex" : "none";
+  }
+
+  return capabilities;
+}
+
 function setupDualSlider(container, minInput, maxInput, min, max, step, stateKeys, formatFn){
   minInput.min = min; minInput.max = max; minInput.step = step; minInput.value = min;
   maxInput.min = min; maxInput.max = max; maxInput.step = step; maxInput.value = max;
@@ -4324,6 +4884,24 @@ function focusDestination(query){
   return true;
 }
 
+document.addEventListener("click", (event)=>{
+  const city = event.target.closest(".city-discovery-set span");
+  if(!city) return;
+
+  const destination = city.textContent.trim();
+  if(!destination) return;
+
+  document.querySelectorAll(".city-discovery-set span").forEach(span => {
+    span.classList.toggle("active", span.textContent.trim() === destination);
+  });
+
+  nlSearch.value = destination;
+  nlSearch.dispatchEvent(new KeyboardEvent("keydown", {
+    key: "Enter",
+    bubbles: true
+  }));
+});
+
 nlSearch.addEventListener("keydown", async (event)=>{
   if(event.key !== "Enter") return;
 
@@ -4331,14 +4909,11 @@ nlSearch.addEventListener("keydown", async (event)=>{
 
   const destinationFocused = focusDestination(state.query);
 
-  if(destinationFocused){
-    state.liveApiResults = false;
-    state.parsedQuery = null;
-    state.query = "";
-    renderList();
-  }
+  const searchDestination = destinationFocused
+    ? state.selectedDestination
+    : state.query;
 
-  if(!state.query){
+  if(!searchDestination){
     state.parsedQuery = null;
     state.liveApiResults = false;
     renderList();
@@ -4349,7 +4924,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
     document.getElementById("resultCount").textContent = "Searching…";
 
     const response = await fetch(
-      `/api/hotels?source=serpapi&destination=${encodeURIComponent(state.query)}`
+      `/api/hotels?source=serpapi&destination=${encodeURIComponent(searchDestination)}&limit=${state.searchLimit}`
     );
 
     if(!response.ok){
@@ -4386,7 +4961,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
           ? h.thumbnails[0]
           : null,
         address: null,
-        city: state.query,
+        city: searchDestination,
         country: null,
         category: null,
         description: h.description || null,
@@ -4402,16 +4977,20 @@ nlSearch.addEventListener("keydown", async (event)=>{
         },
 
         ratings: h.rating != null
-          ? [["Google", h.rating, 5]]
+          ? [["Google", h.rating, 5, h.reviewCount || 0]]
           : [],
 
         amenities: {
           pool: { present: (h.amenities || []).some(a => /pool/i.test(a)), confidence: "reported" },
           gym: { present: (h.amenities || []).some(a => /gym|fitness/i.test(a)), confidence: "reported" },
           air_conditioning: { present: (h.amenities || []).some(a => /air conditioning/i.test(a)), confidence: "reported" },
-          parking_free: { present: (h.amenities || []).some(a => /^parking$/i.test(a)), confidence: "reported" },
+          parking_free: { present: (h.amenities || []).some(a => /parking/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" },
           wifi_free: { present: (h.amenities || []).some(a => /free wi-?fi/i.test(a)), confidence: "reported" },
-          breakfast_included: { present: (h.amenities || []).some(a => /breakfast/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" }
+          breakfast_included: { present: (h.amenities || []).some(a => /breakfast/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" },
+          restaurant: { present: (h.amenities || []).some(a => /restaurant/i.test(a)), confidence: "reported" },
+          bar: { present: (h.amenities || []).some(a => /bar/i.test(a)), confidence: "reported" },
+          kid_friendly: { present: (h.amenities || []).some(a => /kid-friendly|kids? welcome|child-friendly/i.test(a)), confidence: "reported" },
+          accessible: { present: (h.amenities || []).some(a => /accessible|wheelchair/i.test(a)), confidence: "reported" }
         },
 
         signals: {
@@ -4420,7 +4999,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
 
         rooms: [],
 
-        hasFamilyRoom: (h.amenities || []).some(a => /kid-friendly|family/i.test(a)),
+        hasFamilyRoom: false,
         hasFamilyRoomLimited: false,
         dataCompleteness: 0.6,
         liveMatch: null,
@@ -4431,7 +5010,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
         totalStayPrice: h.totalPrice || null,
         pricePerNight: h.price || null,
         rateKey: null,
-        bookable: true,
+        bookable: false,
         allotment: null,
         cancellationPolicies: [],
         checkInTime: h.checkInTime || null,
@@ -4439,6 +5018,7 @@ nlSearch.addEventListener("keydown", async (event)=>{
       }));
 
       HOTELS.splice(0, HOTELS.length, ...liveHotels);
+      updateFilterCapabilities();
 
       if(realMap && liveHotels.length){
         const points = liveHotels
@@ -4459,11 +5039,17 @@ nlSearch.addEventListener("keydown", async (event)=>{
       }
     }
 
-    renderList();
+    try {
+      renderList();
+    } catch(renderError) {
+      console.error("HotelIndice renderList failed:", renderError);
+      console.error("HotelIndice renderList stack:", renderError?.stack);
+      throw renderError;
+    }
 
   }catch(error){
 
-    console.error("HotelIndice search failed:", error);
+    console.error("HotelIndice search failed:", error); console.error("HotelIndice search stack:", error?.stack);
 
     state.liveApiResults = false;
     state.parsedQuery = parseQuery(state.query);
@@ -4502,7 +5088,8 @@ nlSearch.addEventListener("keydown", async (event)=>{
 });
 
 /* ============================= THEME ============================= */
-const btnLight = document.getElementById("btnLight"), btnDark = document.getElementById("btnDark");
+const themeSwitchBtn = document.getElementById("themeSwitchBtn");
+const themeSwitchIcon = document.getElementById("themeSwitchIcon");
 
 function isDark(){
   return document.documentElement.getAttribute("data-theme") === "dark";
@@ -4510,16 +5097,35 @@ function isDark(){
 
 function applyThemeButtons(){
   const dark = isDark();
-  btnLight.classList.toggle("active", !dark);
-  btnDark.classList.toggle("active", dark);
+
+  if(themeSwitchBtn){
+    themeSwitchBtn.setAttribute(
+      "aria-label",
+      dark ? "Switch to day mode" : "Switch to night mode"
+    );
+    themeSwitchBtn.title = dark ? "Day" : "Night";
+  }
+
+  if(themeSwitchIcon){
+    themeSwitchIcon.innerHTML = dark
+      ? '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/>'
+      : '<path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a7 7 0 0 0 10.8 10.8Z"/>';
+  }
+
   renderSkyDressing();
 }
+
 function setTheme(mode){
-  if(mode) { document.documentElement.setAttribute("data-theme", mode); localStorage.setItem("hm-theme", mode); }
+  if(mode){
+    document.documentElement.setAttribute("data-theme", mode);
+    localStorage.setItem("hm-theme", mode);
+  }
   applyThemeButtons();
 }
-btnLight.addEventListener("click", ()=>setTheme("light"));
-btnDark.addEventListener("click", ()=>setTheme("dark"));
+
+themeSwitchBtn?.addEventListener("click", ()=>{
+  setTheme(isDark() ? "light" : "dark");
+});
 try{
   const saved = localStorage.getItem("hm-theme");
 
@@ -4579,8 +5185,7 @@ setInterval(() => {
 /* ============================= INIT ============================= */
 function setViewMode(mode){
   const main = document.querySelector(".main");
-  const mapBtn = document.getElementById("mapViewBtn");
-  const listBtn = document.getElementById("listViewBtn");
+  const switchBtn = document.getElementById("viewSwitchBtn");
 
   if(!main) return;
 
@@ -4589,19 +5194,33 @@ function setViewMode(mode){
   main.classList.toggle("view-list", isList);
   main.classList.toggle("view-map", !isList);
 
-  mapBtn?.classList.toggle("active", !isList);
-  listBtn?.classList.toggle("active", isList);
-
+  if(switchBtn){
+    switchBtn.textContent = isList ? "Map" : "List";
+    switchBtn.setAttribute(
+      "aria-label",
+      isList ? "Switch to map view" : "Switch to list view"
+    );
+  }
 }
 
-document.getElementById("mapViewBtn")?.addEventListener("click", () => setViewMode("map"));
-document.getElementById("listViewBtn")?.addEventListener("click", () => setViewMode("list"));
+document.getElementById("viewSwitchBtn")?.addEventListener("click", () => {
+  const main = document.querySelector(".main");
+  const isList = main?.classList.contains("view-list");
+
+  setViewMode(isList ? "map" : "list");
+});
 
 
 document.addEventListener("click", event => {
   const button = event.target.closest(".check-price-btn");
+
   if(button){
-    openPriceCompare(button.dataset.id);
+    event.stopPropagation();
+
+    const hotelId = button.dataset.id;
+    focusHotel(hotelId, true);
+    openHotelDetail(hotelId);
+    return;
   }
 
   if(event.target.closest("#priceCompareClose")){
@@ -4613,21 +5232,19 @@ document.addEventListener("click", event => {
   }
 });
 
-buildMapArt();
-applyThemeButtons();
 async function loadFeaturedHotels(){
-  try {
+  try{
     const response = await fetch("/api/hotels/featured");
     if(!response.ok) throw new Error(`Featured request failed: ${response.status}`);
 
     const data = await response.json();
 
-    if(Array.isArray(data.hotels) && data.hotels.length){
+    if(Array.isArray(data.hotels)){
       const featuredHotels = data.hotels.map((h, index) => ({
-        id: `featured-${index}`,
+        id: `featured-serpapi-${index}`,
         hotelCode: null,
         name: h.name,
-        neighborhood: h.featuredCity || "",
+        neighborhood: "",
         kind: "Hotel",
         lat: Number(h.coordinates?.latitude),
         lng: Number(h.coordinates?.longitude),
@@ -4647,18 +5264,26 @@ async function loadFeaturedHotels(){
           low: Number(h.price || 0),
           typical: Number(h.price || 0)
         },
-        ratings: h.rating != null ? [["Google", h.rating, 5]] : [],
+        ratings: h.rating != null
+          ? [["Google", h.rating, 5, h.reviewCount || 0]]
+          : [],
         amenities: {
           pool: { present: (h.amenities || []).some(a => /pool/i.test(a)), confidence: "reported" },
           gym: { present: (h.amenities || []).some(a => /gym|fitness/i.test(a)), confidence: "reported" },
           air_conditioning: { present: (h.amenities || []).some(a => /air conditioning/i.test(a)), confidence: "reported" },
-          parking_free: { present: (h.amenities || []).some(a => /^parking$/i.test(a)), confidence: "reported" },
+          parking_free: { present: (h.amenities || []).some(a => /parking/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" },
           wifi_free: { present: (h.amenities || []).some(a => /free wi-?fi/i.test(a)), confidence: "reported" },
-          breakfast_included: { present: (h.amenities || []).some(a => /breakfast/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" }
+          breakfast_included: { present: (h.amenities || []).some(a => /breakfast/i.test(a) && !/\(\$\)/.test(a)), confidence: "reported" },
+          restaurant: { present: (h.amenities || []).some(a => /restaurant/i.test(a)), confidence: "reported" },
+          bar: { present: (h.amenities || []).some(a => /bar/i.test(a)), confidence: "reported" },
+          kid_friendly: { present: (h.amenities || []).some(a => /kid-friendly|kids? welcome|child-friendly/i.test(a)), confidence: "reported" },
+          accessible: { present: (h.amenities || []).some(a => /accessible|wheelchair/i.test(a)), confidence: "reported" }
         },
-        signals: { reviewSentiment: h.reviewSentiment || [] },
+        signals: {
+          reviewSentiment: h.reviewSentiment || []
+        },
         rooms: [],
-        hasFamilyRoom: (h.amenities || []).some(a => /kid-friendly|family/i.test(a)),
+        hasFamilyRoom: false,
         hasFamilyRoomLimited: false,
         dataCompleteness: 0.6,
         liveMatch: null,
@@ -4669,22 +5294,46 @@ async function loadFeaturedHotels(){
         totalStayPrice: h.totalPrice || null,
         pricePerNight: h.price || null,
         rateKey: null,
-        bookable: true,
+        bookable: false,
         allotment: null,
         cancellationPolicies: [],
         checkInTime: h.checkInTime || null,
-        checkOutTime: h.checkOutTime || null
+        checkOutTime: h.checkOutTime || null,
+        featuredCity: h.featuredCity || null
       }));
 
       HOTELS.splice(0, HOTELS.length, ...featuredHotels);
-      state.liveApiResults = true;
+      updateFilterCapabilities();
+      state.liveApiResults = false;
+
+      if(realMap && featuredHotels.length){
+        const points = featuredHotels
+          .filter(h => Number.isFinite(h.lat) && Number.isFinite(h.lng))
+          .map(h => [h.lat, h.lng]);
+
+        if(points.length){
+          realMap.fitBounds(points, {
+            padding: [40, 40],
+            maxZoom: 4
+          });
+
+          setTimeout(() => {
+            renderHotelMarkers();
+            updateMapLegend();
+          }, 100);
+        }
+      }
     }
-  } catch (error) {
-    console.error("Failed to load featured hotels:", error.message);
+  }catch(error){
+    console.error("Featured hotels failed:", error);
   }
 }
 
+buildMapArt();
+applyThemeButtons();
+
 await loadFeaturedHotels();
+
 renderList();
 setViewMode("map");
 window.addEventListener("resize", ()=>{ resetView(); });

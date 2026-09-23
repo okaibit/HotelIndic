@@ -20,6 +20,26 @@ function setCachedSerpApiResult(key, data) {
   serpApiCache.set(key, { data, time: Date.now() });
 }
 
+function getCachedSerpApiPage(key) {
+  const hit = serpApiCache.get(`page:${key}`);
+
+  if (!hit) return null;
+
+  if (Date.now() - hit.time > SERPAPI_CACHE_TTL_MS) {
+    serpApiCache.delete(`page:${key}`);
+    return null;
+  }
+
+  return hit.data;
+}
+
+function setCachedSerpApiPage(key, data) {
+  serpApiCache.set(`page:${key}`, {
+    data,
+    time: Date.now()
+  });
+}
+
 const fs = require("fs");
 const https = require("https");
 
@@ -151,6 +171,37 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
+app.get("/api/traffic/tiles/:z/:x/:y", async (req, res) => {
+  try {
+    const { z, x, y } = req.params;
+    const apiKey = process.env.TOMTOM_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: "TomTom API key is not configured" });
+    }
+
+    const url =
+      `https://api.tomtom.com/traffic/map/4/tile/flow/relative/${z}/${x}/${y}.png` +
+      `?key=${encodeURIComponent(apiKey)}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return res.status(response.status).send(await response.text());
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    res.set("Content-Type", response.headers.get("content-type") || "image/png");
+    res.set("Cache-Control", "public, max-age=30");
+
+    res.send(buffer);
+  } catch (error) {
+    console.error("TomTom traffic tile error:", error);
+    res.status(500).json({ error: "Failed to load traffic tile" });
+  }
+});
+
 app.get("/api/hotels", async (req, res) => {
   try {
     if (req.query.source === "stayapi") {
@@ -269,37 +320,91 @@ app.get("/api/hotels", async (req, res) => {
       const checkIn = req.query.checkIn || "2026-12-20";
       const checkOut = req.query.checkOut || "2026-12-23";
       const currency = req.query.currency || "USD";
-      const cacheKey = [destination, checkIn, checkOut, currency].join("|").toLowerCase();
 
-      let hotels = getCachedSerpApiResult(cacheKey);
+      const allowedLimits = [20, 50, 100, 200];
+      const requestedLimit = Number(req.query.limit || 20);
+      const limit = allowedLimits.includes(requestedLimit)
+        ? requestedLimit
+        : 20;
 
-      if (!hotels) {
-        let properties;
-        try {
-          properties = await searchHotelsSerpApi({
-            query: destination,
-            checkIn,
-            checkOut,
-            currency
-          });
-        } catch (error) {
-          console.error("SerpApi search failed:", error.message);
-          return res.status(503).json({
-            total: 0,
-            source: "serpapi",
-            error: "Hotel search is currently unavailable.",
-            hotels: []
-          });
+      const cacheKey = [
+        destination,
+        checkIn,
+        checkOut,
+        currency
+      ].join("|").toLowerCase();
+
+      const allHotels = [];
+      let nextPageToken = null;
+      let page = 1;
+
+      while (allHotels.length < limit) {
+        const pageCacheKey = [
+          cacheKey,
+          page
+        ].join("|");
+
+        let cachedPage = getCachedSerpApiPage(pageCacheKey);
+
+        if (cachedPage) {
+          allHotels.push(...cachedPage.properties);
+          nextPageToken = cachedPage.nextPageToken;
+        } else {
+          let result;
+
+          try {
+            result = await searchHotelsSerpApi({
+              query: destination,
+              checkIn,
+              checkOut,
+              currency,
+              nextPageToken
+            });
+          } catch (error) {
+            console.error("SerpApi search failed:", error.message);
+
+            return res.status(503).json({
+              total: 0,
+              source: "serpapi",
+              error: "Hotel search is currently unavailable.",
+              hotels: []
+            });
+          }
+
+          const normalizedPage = {
+            properties: result.properties.map(normalizeSerpApiHotel),
+            nextPageToken: result.nextPageToken
+          };
+
+          setCachedSerpApiPage(
+            pageCacheKey,
+            normalizedPage
+          );
+
+          allHotels.push(...normalizedPage.properties);
+          nextPageToken = normalizedPage.nextPageToken;
         }
 
-        hotels = properties.map(normalizeSerpApiHotel);
-        setCachedSerpApiResult(cacheKey, hotels);
+        if (!nextPageToken) {
+          break;
+        }
+
+        page += 1;
       }
+
+      const hotels = allHotels.slice(0, limit);
 
       return res.json({
         total: hotels.length,
+        requested: limit,
+        hasMore: Boolean(nextPageToken),
         source: "serpapi",
-        search: { destination, checkIn, checkOut, currency },
+        search: {
+          destination,
+          checkIn,
+          checkOut,
+          currency
+        },
         hotels
       });
     }
@@ -378,14 +483,24 @@ app.get("/api/hotels", async (req, res) => {
         }
       ],
 
-      destination: {
-        code:
-          resolveDestination(
-            req.query.destination ||
-            parsedQuery?.destination ||
-            "Dubai"
-          ).code
-      },
+      destination: (() => {
+        const destinationInput =
+          req.query.destination ||
+          parsedQuery?.destination ||
+          null;
+
+        const resolved = resolveDestination(destinationInput);
+
+        if (!resolved.code) {
+          throw new Error(
+            `Hotelbeds destination could not be resolved: ${destinationInput || "missing"}`
+          );
+        }
+
+        return {
+          code: resolved.code
+        };
+      })(),
       currency:
         req.query.currency ||
         parsedQuery?.currency ||
@@ -706,12 +821,16 @@ app.get("/api/hotels", async (req, res) => {
 
 
 const FEATURED_CITIES = [
-  "Lagos",
+  "London",
   "Paris",
+  "Amsterdam",
+  "Istanbul",
+  "Dubai",
   "Tokyo",
   "New York",
   "São Paulo",
-  "Sydney"
+  "Cape Town",
+  "Nairobi"
 ];
 
 const FEATURED_CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24 hours
@@ -740,9 +859,13 @@ app.get("/api/hotels/featured", async (req, res) => {
 
     results.forEach((result, i) => {
       if (result.status === "fulfilled") {
-        const normalized = result.value.map(normalizeSerpApiHotel);
-        normalized.forEach(h => { h.featuredCity = FEATURED_CITIES[i]; });
-        allHotels.push(...normalized);
+        const normalized = (result.value.properties || []).map(normalizeSerpApiHotel);
+
+        if (normalized.length) {
+          const hotel = normalized[0];
+          hotel.featuredCity = FEATURED_CITIES[i];
+          allHotels.push(hotel);
+        }
       } else {
         console.error(`Featured city failed (${FEATURED_CITIES[i]}):`, result.reason?.message);
       }

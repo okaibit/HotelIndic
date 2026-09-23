@@ -6,7 +6,15 @@ function normalizeSerpApiHotel(h) {
     totalPrice: h.total_rate?.extracted_lowest ?? null,
     currency: "USD",
     photos: (h.images || []).map(i => i.original_image).filter(Boolean),
-    thumbnails: (h.images || []).map(i => i.thumbnail).filter(Boolean),
+    thumbnails: (h.images || [])
+  .map(i => {
+    if (!i.thumbnail) return null;
+    return i.thumbnail.replace(
+      /=s287-w287-h192-n-k-no-v1$/,
+      "=s600-w600-h400-n-k-no-v1"
+    );
+  })
+  .filter(Boolean),
     rating: h.overall_rating ?? null,
     reviewCount: h.reviews ?? null,
     amenities: h.amenities || [],
