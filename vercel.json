@@ -6,6 +6,10 @@
       "destination": "/api"
     },
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap.xml"
+    },
+    {
       "source": "/hotels/:destination",
       "destination": "/index.html"
     }

@@ -158,7 +158,7 @@ const { getExchangeRate } = require("./fx");
 const { getHotelContent } = require("./hotelbeds-content");
 const { parseHotelQuery } = require("./query-parser");
 const { resolveDestination } = require("./destinations");
-const { getDestinationSeo } = require("./destination-seo");
+const { DESTINATIONS, getDestinationSeo } = require("./destination-seo");
 
 const app = express();
 
@@ -938,6 +938,22 @@ app.post("/api/review-requests", (req, res) => {
     success: true,
     message: "Your hotel review request has been received."
   });
+});
+
+app.get("/sitemap.xml", (req, res) => {
+  const urls = [
+    "https://hotelindice.com/",
+    ...Object.keys(DESTINATIONS).map(
+      slug => `https://hotelindice.com/hotels/${slug}`
+    )
+  ];
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(url => `  <url><loc>${url}</loc></url>`).join("\n")}
+</urlset>`;
+
+  res.type("application/xml").send(xml);
 });
 
 app.get("/hotels/:destination", (req, res) => {
