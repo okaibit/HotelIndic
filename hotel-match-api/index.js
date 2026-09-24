@@ -939,6 +939,49 @@ app.post("/api/review-requests", (req, res) => {
   });
 });
 
+app.get("/hotels/:destination", (req, res) => {
+  const destination = decodeURIComponent(req.params.destination || "")
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, char => char.toUpperCase());
+
+  const indexPath = path.join(__dirname, "..", "index.html");
+
+  try {
+    let html = require("fs").readFileSync(indexPath, "utf8");
+
+    const safeDestination = destination
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+    const canonicalDestination = destination
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    html = html
+      .replace(
+        /<title>.*?<\/title>/i,
+        `<title>HotelIndice — Hotels in ${safeDestination}</title>`
+      )
+      .replace(
+        /<meta name="description" content=".*?">/i,
+        `<meta name="description" content="Discover and compare hotels in ${safeDestination} by price, location, rooms, amenities, and what actually matters for your trip.">`
+      )
+      .replace(
+        /<link rel="canonical" href=".*?">/i,
+        `<link rel="canonical" href="https://hotelindice.com/hotels/${canonicalDestination}">`
+      );
+
+    res.type("html").send(html);
+  } catch (error) {
+    console.error("Destination page render failed:", error);
+    res.status(500).send("HotelIndice destination page unavailable.");
+  }
+});
+
 app.use(express.static(path.join(__dirname, "..")));
 
 if (process.env.VERCEL !== "1") {

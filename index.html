@@ -144,18 +144,35 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="HotelIndice helps you discover and compare hotels based on price, location, rooms, amenities, and what actually matters for your trip.">
+<title>HotelIndice — Find Hotels That Fit Your Trip</title>
+<meta name="description" content="Discover and compare hotels by price, location, rooms, amenities, and what actually matters for your trip.">
+<link rel="canonical" href="https://hotelindice.com/">
+
+
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<title>HotelIndice — Lagos</title><meta property="og:type" content="website">
-<meta property="og:title" content="HotelIndice — Find hotels that actually fit your trip">
-<meta property="og:description" content="Discover and compare hotels by price, location, rooms, amenities, and what matters for your trip.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HotelIndice">
+<meta property="og:title" content="HotelIndice — Find Hotels That Fit Your Trip">
+<meta property="og:description" content="Discover and compare hotels by price, location, rooms, amenities, and what actually matters for your trip.">
 <meta property="og:image" content="https://hotelindice.com/assets/og-image.jpg">
 <meta property="og:url" content="https://hotelindice.com/">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="HotelIndice — Find hotels that actually fit your trip">
-<meta name="twitter:description" content="Discover and compare hotels by price, location, rooms, amenities, and what matters for your trip.">
+<meta name="twitter:title" content="HotelIndice — Find Hotels That Fit Your Trip">
+<meta name="twitter:description" content="Discover and compare hotels by price, location, rooms, amenities, and what actually matters for your trip.">
 <meta name="twitter:image" content="https://hotelindice.com/assets/og-image.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "HotelIndice",
+  "url": "https://hotelindice.com/",
+  "description": "Discover and compare hotels by price, location, rooms, amenities, and what actually matters for your trip."
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&display=swap" rel="stylesheet">
@@ -4902,6 +4919,21 @@ document.addEventListener("click", (event)=>{
   }));
 });
 
+function getRouteDestination(){
+  const match = window.location.pathname.match(/^\/hotels\/([^/]+)\/?$/i);
+  if(!match) return "";
+
+  return decodeURIComponent(match[1])
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+const routeDestination = getRouteDestination();
+
+if(routeDestination){
+  nlSearch.value = routeDestination;
+}
+
 nlSearch.addEventListener("keydown", async (event)=>{
   if(event.key !== "Enter") return;
 
@@ -5086,6 +5118,15 @@ nlSearch.addEventListener("keydown", async (event)=>{
 
   }
 });
+
+if(routeDestination){
+  setTimeout(() => {
+    nlSearch.dispatchEvent(new KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true
+    }));
+  }, 0);
+}
 
 /* ============================= THEME ============================= */
 const themeSwitchBtn = document.getElementById("themeSwitchBtn");

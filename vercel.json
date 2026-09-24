@@ -4,6 +4,10 @@
     {
       "source": "/api/:path*",
       "destination": "/api"
+    },
+    {
+      "source": "/hotels/:destination",
+      "destination": "/index.html"
     }
   ]
 }
