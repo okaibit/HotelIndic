@@ -158,6 +158,7 @@ const { getExchangeRate } = require("./fx");
 const { getHotelContent } = require("./hotelbeds-content");
 const { parseHotelQuery } = require("./query-parser");
 const { resolveDestination } = require("./destinations");
+const { getDestinationSeo } = require("./destination-seo");
 
 const app = express();
 
@@ -940,15 +941,22 @@ app.post("/api/review-requests", (req, res) => {
 });
 
 app.get("/hotels/:destination", (req, res) => {
-  const destination = decodeURIComponent(req.params.destination || "")
-    .replace(/[-_]+/g, " ")
-    .trim()
-    .replace(/\b\w/g, char => char.toUpperCase());
+  const rawSlug = decodeURIComponent(req.params.destination || "")
+    .toLowerCase()
+    .trim();
+
+  const seo = getDestinationSeo(rawSlug);
+
+  const destination = seo
+    ? seo.name
+    : rawSlug
+        .replace(/[-_]+/g, " ")
+        .replace(/\b\w/g, char => char.toUpperCase());
 
   const indexPath = path.join(__dirname, "..", "index.html");
 
   try {
-    let html = require("fs").readFileSync(indexPath, "utf8");
+    let html = fs.readFileSync(indexPath, "utf8");
 
     const safeDestination = destination
       .replace(/&/g, "&amp;")
@@ -956,10 +964,47 @@ app.get("/hotels/:destination", (req, res) => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
 
-    const canonicalDestination = destination
-      .toLowerCase()
+    const canonicalDestination = rawSlug
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
+
+    const description = seo
+      ? seo.description
+      : `Discover and compare hotels in ${destination} by price, location, rooms, amenities, and what actually matters for your trip.`;
+
+    const safeDescription = description
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    const destinationContent = seo
+      ? `
+        <section class="destination-seo-content" aria-labelledby="destinationSeoTitle">
+          <h1 id="destinationSeoTitle">Hotels in ${safeDestination}</h1>
+          <p>${safeDescription}</p>
+          <p>Compare hotels across ${safeDestination}, including popular areas such as ${seo.areas.join(", ")}.</p>
+        </section>
+      `
+      : "";
+
+    const destinationSchema = seo
+      ? {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": `Hotels in ${seo.name}`,
+          "url": `https://hotelindice.com/hotels/${canonicalDestination}`,
+          "description": seo.description,
+          "about": {
+            "@type": "Place",
+            "name": seo.name,
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": seo.country
+            }
+          }
+        }
+      : null;
 
     html = html
       .replace(
@@ -968,12 +1013,26 @@ app.get("/hotels/:destination", (req, res) => {
       )
       .replace(
         /<meta name="description" content=".*?">/i,
-        `<meta name="description" content="Discover and compare hotels in ${safeDestination} by price, location, rooms, amenities, and what actually matters for your trip.">`
+        `<meta name="description" content="${safeDescription}">`
       )
       .replace(
         /<link rel="canonical" href=".*?">/i,
         `<link rel="canonical" href="https://hotelindice.com/hotels/${canonicalDestination}">`
       );
+
+    if (destinationContent) {
+      html = html.replace(
+        '<div class="list-panel" id="listPanel">',
+        `${destinationContent}\n<div id="hotelResults"`
+      );
+    }
+
+    if (destinationSchema) {
+      html = html.replace(
+        "</head>",
+        `<script type="application/ld+json">${JSON.stringify(destinationSchema)}</script>\n</head>`
+      );
+    }
 
     res.type("html").send(html);
   } catch (error) {
