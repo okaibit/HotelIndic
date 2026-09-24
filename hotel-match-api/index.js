@@ -1045,6 +1045,26 @@ app.get("/hotels/:destination", (req, res) => {
       .replace(
         /<link rel="canonical" href=".*?">/i,
         `<link rel="canonical" href="https://hotelindice.com/hotels/${canonicalDestination}">`
+      )
+      .replace(
+        /<meta property="og:title" content=".*?">/i,
+        `<meta property="og:title" content="HotelIndice — Hotels in ${safeDestination}">`
+      )
+      .replace(
+        /<meta property="og:description" content=".*?">/i,
+        `<meta property="og:description" content="${safeDescription}">`
+      )
+      .replace(
+        /<meta property="og:url" content=".*?">/i,
+        `<meta property="og:url" content="https://hotelindice.com/hotels/${canonicalDestination}">`
+      )
+      .replace(
+        /<meta name="twitter:title" content=".*?">/i,
+        `<meta name="twitter:title" content="HotelIndice — Hotels in ${safeDestination}">`
+      )
+      .replace(
+        /<meta name="twitter:description" content=".*?">/i,
+        `<meta name="twitter:description" content="${safeDescription}">`
       );
 
     if (destinationContent) {
