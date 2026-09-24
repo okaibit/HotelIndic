@@ -1000,6 +1000,17 @@ app.get("/hotels/:destination", (req, res) => {
           <h1 id="destinationSeoTitle">Hotels in ${safeDestination}</h1>
           <p>${safeDescription}</p>
           <p>Compare hotels across ${safeDestination}, including popular areas such as ${seo.areas.join(", ")}.</p>
+          <nav class="destination-internal-links" aria-label="Explore more destinations">
+            <h2>Explore more destinations</h2>
+            <div class="destination-link-list">
+              ${Object.entries(DESTINATIONS)
+                .filter(([slug]) => slug !== canonicalDestination)
+                .map(([slug, item]) => `
+                  <a href="/hotels/${slug}">Hotels in ${item.name}</a>
+                `)
+                .join("")}
+            </div>
+          </nav>
         </section>
       `
       : "";
