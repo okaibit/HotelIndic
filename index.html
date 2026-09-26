@@ -3733,7 +3733,12 @@ function renderHotelDetailTabContent(h, tab){
   if(tab === "photos"){
     const photos = Array.isArray(h.images)
       ? h.images
-          .map(image => typeof image === "string" ? image : (image && image.path ? `https://photos.hotelbeds.com/giata/${image.path}` : null))
+          .map(image => {
+            if (typeof image === "string") return image;
+            if (image && image.url) return image.url;
+            if (image && image.thumbnail) return image.thumbnail;
+            return null;
+          })
           .filter(Boolean)
           .filter((url, index, arr) => arr.indexOf(url) === index)
           .slice(0, 12)
