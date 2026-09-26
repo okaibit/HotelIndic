@@ -1,24 +1,26 @@
 const path = require("path");
 require("dotenv").config();
 
+function getDefaultStayDates() {
+  const checkIn = new Date();
+  checkIn.setDate(checkIn.getDate() + 1);
+
+  const checkOut = new Date(checkIn);
+  checkOut.setDate(checkOut.getDate() + 2);
+
+  const format = date => date.toISOString().slice(0, 10);
+
+  return {
+    checkIn: format(checkIn),
+    checkOut: format(checkOut)
+  };
+}
+
 // Simple in-memory cache for SerpApi results, to avoid burning
 // search quota on repeat requests for the same city/dates.
 const serpApiCache = new Map();
 const SERPAPI_CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
-function getCachedSerpApiResult(key) {
-  const hit = serpApiCache.get(key);
-  if (!hit) return null;
-  if (Date.now() - hit.time > SERPAPI_CACHE_TTL_MS) {
-    serpApiCache.delete(key);
-    return null;
-  }
-  return hit.data;
-}
-
-function setCachedSerpApiResult(key, data) {
-  serpApiCache.set(key, { data, time: Date.now() });
-}
 
 function getCachedSerpApiPage(key) {
   const hit = serpApiCache.get(`page:${key}`);
@@ -38,6 +40,11 @@ function setCachedSerpApiPage(key, data) {
     data,
     time: Date.now()
   });
+
+  if (serpApiCache.size > 100) {
+    const oldestKey = serpApiCache.keys().next().value;
+    serpApiCache.delete(oldestKey);
+  }
 }
 
 const fs = require("fs");
@@ -165,7 +172,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 
 app.get("/", (req, res) => {
@@ -188,7 +195,7 @@ app.get("/api/traffic/tiles/:z/:x/:y", async (req, res) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-      return res.status(response.status).send(await response.text());
+      return res.status(response.status).json({ error: "Failed to load traffic tile" });
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
@@ -205,19 +212,58 @@ app.get("/api/traffic/tiles/:z/:x/:y", async (req, res) => {
 
 app.get("/api/hotels", async (req, res) => {
   try {
+    const defaultStayDates = getDefaultStayDates();
     if (req.query.source === "stayapi") {
+      if (req.query.destId !== undefined && !Number.isInteger(Number(req.query.destId))) {
+        return res.status(400).json({ error: "Invalid destId" });
+      }
+
+      if (req.query.adults !== undefined && (!Number.isInteger(Number(req.query.adults)) || Number(req.query.adults) < 1)) {
+        return res.status(400).json({ error: "Invalid adults" });
+      }
+
+      if (req.query.rooms !== undefined && (!Number.isInteger(Number(req.query.rooms)) || Number(req.query.rooms) < 1)) {
+        return res.status(400).json({ error: "Invalid rooms" });
+      }
+
+      if (req.query.children !== undefined && (!Number.isInteger(Number(req.query.children)) || Number(req.query.children) < 0)) {
+        return res.status(400).json({ error: "Invalid children" });
+      }
+
+      if (req.query.childAges !== undefined) {
+        const childAges = req.query.childAges
+          .split(",")
+          .map(age => Number(age.trim()));
+
+        if (childAges.some(age => !Number.isFinite(age) || age < 0)) {
+          return res.status(400).json({ error: "Invalid childAges" });
+        }
+      }
+
+      if (req.query.maxPrice !== undefined && (!Number.isFinite(Number(req.query.maxPrice)) || Number(req.query.maxPrice) < 0)) {
+        return res.status(400).json({ error: "Invalid maxPrice" });
+      }
+
+      if (req.query.offset !== undefined && (!Number.isInteger(Number(req.query.offset)) || Number(req.query.offset) < 0)) {
+        return res.status(400).json({ error: "Invalid offset" });
+      }
+
+      if (req.query.rowsPerPage !== undefined && (!Number.isInteger(Number(req.query.rowsPerPage)) || Number(req.query.rowsPerPage) < 1)) {
+        return res.status(400).json({ error: "Invalid rowsPerPage" });
+      }
+
       let result;
 
       try {
         result = await searchStayAPI({
-        destId: req.query.destId
-      ? Number(req.query.destId)
-      : (
-          resolveStayAPIDestination(req.query.destination) ??
-          (await lookupStayAPIDestination(req.query.destination)).destId
-        ),
-        checkin: req.query.checkIn || "2026-10-10",
-        checkout: req.query.checkOut || "2026-10-12",
+        destId: req.query.destId !== undefined
+          ? Number(req.query.destId)
+          : (
+              resolveStayAPIDestination(req.query.destination) ??
+              (await lookupStayAPIDestination(req.query.destination)).destId
+            ),
+        checkin: req.query.checkIn || defaultStayDates.checkIn,
+        checkout: req.query.checkOut || defaultStayDates.checkOut,
         adults: Number(req.query.adults || 2),
         rooms: Number(req.query.rooms || 1),
         children: Number(req.query.children || 0),
@@ -303,8 +349,8 @@ app.get("/api/hotels", async (req, res) => {
         source: "stayapi",
         search: {
           destination: req.query.destination || req.query.destId,
-          checkIn: req.query.checkIn || "2026-10-10",
-          checkOut: req.query.checkOut || "2026-10-12",
+          checkIn: req.query.checkIn || defaultStayDates.checkIn,
+          checkOut: req.query.checkOut || defaultStayDates.checkOut,
           adults: Number(req.query.adults || 2),
           children: Number(req.query.children || 0),
           currency: req.query.currency || "USD"
@@ -318,8 +364,8 @@ app.get("/api/hotels", async (req, res) => {
       const { normalizeSerpApiHotel } = require("./serpapi-normalizer");
 
       const destination = req.query.destination || req.query.q || "hotels";
-      const checkIn = req.query.checkIn || "2026-12-20";
-      const checkOut = req.query.checkOut || "2026-12-23";
+      const checkIn = req.query.checkIn || defaultStayDates.checkIn;
+      const checkOut = req.query.checkOut || defaultStayDates.checkOut;
       const currency = req.query.currency || "USD";
 
       const allowedLimits = [20, 50, 100, 200];
@@ -412,9 +458,10 @@ app.get("/api/hotels", async (req, res) => {
 
     const apiKey = process.env.HOTELBEDS_API_KEY;
     const secret = process.env.HOTELBEDS_API_SECRET;
+const hotelbedsHotelsUrl = process.env.HOTELBEDS_HOTELS_URL;
 
     const timestamp = Math.floor(Date.now() / 1000);
-    console.log("Hotelbeds auth debug:", { timestamp, endpoint: "https://api-mtls.test.hotelbeds.com/hotel-api/1.0/hotels", keyLength: apiKey?.length, secretLength: secret?.length });
+    console.log("Hotelbeds auth debug:", { timestamp, endpoint: hotelbedsHotelsUrl, keyLength: apiKey?.length, secretLength: secret?.length });
     const signature = crypto
       .createHash("sha256")
       .update(apiKey + secret + timestamp)
@@ -441,7 +488,7 @@ app.get("/api/hotels", async (req, res) => {
           ? parsedQuery.children
           : parsedQuery?.totalGuests
             ? Math.max(parsedQuery.totalGuests - adults, 0)
-            : 2;
+            : 0;
 
     const childAges =
       req.query.childAges
@@ -450,7 +497,7 @@ app.get("/api/hotels", async (req, res) => {
             .map(age => Number(age.trim()))
         : parsedQuery?.childAges?.length
           ? parsedQuery.childAges
-          : [8, 5];
+          : [];
 
     const paxes = [
       ...Array.from(
@@ -471,8 +518,8 @@ app.get("/api/hotels", async (req, res) => {
 
     const body = {
       stay: {
-        checkIn: req.query.checkIn || "2026-10-10",
-        checkOut: req.query.checkOut || "2026-10-12"
+        checkIn: req.query.checkIn || defaultStayDates.checkIn,
+        checkOut: req.query.checkOut || defaultStayDates.checkOut
       },
 
       occupancies: [
@@ -517,7 +564,7 @@ app.get("/api/hotels", async (req, res) => {
     }
 
     const response = await hotelbedsRequest(
-      "https://api-mtls.test.hotelbeds.com/hotel-api/1.0/hotels",
+      hotelbedsHotelsUrl,
       {
         method: "POST",
         headers: {
@@ -847,8 +894,9 @@ app.get("/api/hotels/featured", async (req, res) => {
     const { searchHotelsSerpApi } = require("./serpapi-client");
     const { normalizeSerpApiHotel } = require("./serpapi-normalizer");
 
-    const checkIn = "2026-12-20";
-    const checkOut = "2026-12-23";
+    const defaultStayDates = getDefaultStayDates();
+    const checkIn = req.query.checkIn || defaultStayDates.checkIn;
+    const checkOut = req.query.checkOut || defaultStayDates.checkOut;
 
     const results = await Promise.allSettled(
       FEATURED_CITIES.map(city =>
@@ -940,18 +988,20 @@ app.post("/api/review-requests", (req, res) => {
   });
 });
 
+const site = "https:" + "/" + "/" + "hotelindice.com";
+const schema = "https:" + "/" + "/" + "schema.org";
+const sitemapNS = "http:" + "/" + "/" + "www.sitemaps.org/schemas/sitemap/0.9";
+
 app.get("/sitemap.xml", (req, res) => {
   const urls = [
-    "https://hotelindice.com/",
-    ...Object.keys(DESTINATIONS).map(
-      slug => `https://hotelindice.com/hotels/${slug}`
-    )
+    site + "/",
+    ...Object.keys(DESTINATIONS).map(slug => site + "/hotels/" + slug)
   ];
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(url => `  <url><loc>${url}</loc></url>`).join("\n")}
-</urlset>`;
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<urlset xmlns="' + sitemapNS + '">' +
+    urls.map(url => "  <url><loc>" + url + "</loc></url>").join("\n") +
+    "</urlset>";
 
   res.type("application/xml").send(xml);
 });
@@ -986,7 +1036,7 @@ app.get("/hotels/:destination", (req, res) => {
 
     const description = seo
       ? seo.description
-      : `Discover and compare hotels in ${destination} by price, location, rooms, amenities, and what actually matters for your trip.`;
+      : "Discover and compare hotels in " + destination + " by price, location, rooms, amenities, and what actually matters for your trip.";
 
     const safeDescription = description
       .replace(/&/g, "&amp;")
@@ -995,32 +1045,26 @@ app.get("/hotels/:destination", (req, res) => {
       .replace(/>/g, "&gt;");
 
     const destinationContent = seo
-      ? `
-        <section class="destination-seo-content" aria-labelledby="destinationSeoTitle">
-          <h1 id="destinationSeoTitle">Hotels in ${safeDestination}</h1>
-          <p>${safeDescription}</p>
-          <p>Compare hotels across ${safeDestination}, including popular areas such as ${seo.areas.join(", ")}.</p>
-          <nav class="destination-internal-links" aria-label="Explore more destinations">
-            <h2>Explore more destinations</h2>
-            <div class="destination-link-list">
-              ${Object.entries(DESTINATIONS)
-                .filter(([slug]) => slug !== canonicalDestination)
-                .map(([slug, item]) => `
-                  <a href="/hotels/${slug}">Hotels in ${item.name}</a>
-                `)
-                .join("")}
-            </div>
-          </nav>
-        </section>
-      `
+      ? '<section class="destination-seo-content" aria-labelledby="destinationSeoTitle">' +
+        '<h1 id="destinationSeoTitle">Hotels in ' + safeDestination + '</h1>' +
+        "<p>" + safeDescription + "</p>" +
+        "<p>Compare hotels across " + safeDestination + ", including popular areas such as " + seo.areas.join(", ") + ".</p>" +
+        '<nav class="destination-internal-links" aria-label="Explore more destinations">' +
+        "<h2>Explore more destinations</h2>" +
+        '<div class="destination-link-list">' +
+        Object.entries(DESTINATIONS)
+          .filter(([slug]) => slug !== canonicalDestination)
+          .map(([slug, item]) => '<a href="/hotels/' + slug + '">Hotels in ' + item.name + "</a>")
+          .join("") +
+        "</div></nav></section>"
       : "";
 
     const destinationSchema = seo
       ? {
-          "@context": "https://schema.org",
+          "@context": schema,
           "@type": "CollectionPage",
-          "name": `Hotels in ${seo.name}`,
-          "url": `https://hotelindice.com/hotels/${canonicalDestination}`,
+          "name": "Hotels in " + seo.name,
+          "url": site + "/hotels/" + canonicalDestination,
           "description": seo.description,
           "about": {
             "@type": "Place",
@@ -1034,38 +1078,14 @@ app.get("/hotels/:destination", (req, res) => {
       : null;
 
     html = html
-      .replace(
-        /<title>.*?<\/title>/i,
-        `<title>HotelIndice — Hotels in ${safeDestination}</title>`
-      )
-      .replace(
-        /<meta name="description" content=".*?">/i,
-        `<meta name="description" content="${safeDescription}">`
-      )
-      .replace(
-        /<link rel="canonical" href=".*?">/i,
-        `<link rel="canonical" href="https://hotelindice.com/hotels/${canonicalDestination}">`
-      )
-      .replace(
-        /<meta property="og:title" content=".*?">/i,
-        `<meta property="og:title" content="HotelIndice — Hotels in ${safeDestination}">`
-      )
-      .replace(
-        /<meta property="og:description" content=".*?">/i,
-        `<meta property="og:description" content="${safeDescription}">`
-      )
-      .replace(
-        /<meta property="og:url" content=".*?">/i,
-        `<meta property="og:url" content="https://hotelindice.com/hotels/${canonicalDestination}">`
-      )
-      .replace(
-        /<meta name="twitter:title" content=".*?">/i,
-        `<meta name="twitter:title" content="HotelIndice — Hotels in ${safeDestination}">`
-      )
-      .replace(
-        /<meta name="twitter:description" content=".*?">/i,
-        `<meta name="twitter:description" content="${safeDescription}">`
-      );
+      .replace(/<title>.*?<\/title>/i, "<title>HotelIndice — Hotels in " + safeDestination + "</title>")
+      .replace(/<meta name="description" content=".*?">/i, '<meta name="description" content="' + safeDescription + '">')
+      .replace(/<link rel="canonical" href=".*?">/i, '<link rel="canonical" href="' + site + "/hotels/" + canonicalDestination + '">')
+      .replace(/<meta property="og:title" content=".*?">/i, '<meta property="og:title" content="HotelIndice — Hotels in ' + safeDestination + '">')
+      .replace(/<meta property="og:description" content=".*?">/i, '<meta property="og:description" content="' + safeDescription + '">')
+      .replace(/<meta property="og:url" content=".*?">/i, '<meta property="og:url" content="' + site + "/hotels/" + canonicalDestination + '">')
+      .replace(/<meta name="twitter:title" content=".*?">/i, '<meta name="twitter:title" content="HotelIndice — Hotels in ' + safeDestination + '">')
+      .replace(/<meta name="twitter:description" content=".*?">/i, '<meta name="twitter:description" content="' + safeDescription + '">')
 
     if (destinationContent) {
       html = html.replace(
@@ -1086,6 +1106,16 @@ app.get("/hotels/:destination", (req, res) => {
     console.error("Destination page render failed:", error);
     res.status(500).send("HotelIndice destination page unavailable.");
   }
+});
+
+app.get("/robots.txt", (req, res) => {
+  const sitemapUrl = "https:" + "/" + "/" + "hotelindice.com" + "/sitemap.xml";
+
+  res.type("text/plain").send(
+    "User-agent: *\n" +
+    "Allow: /\n\n" +
+    "Sitemap: " + sitemapUrl + "\n"
+  );
 });
 
 app.use(express.static(path.join(__dirname, "..")));
