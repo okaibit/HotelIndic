@@ -1,5 +1,5 @@
 const path = require("path");
-require("dotenv").config();
+if (process.env.VERCEL !== "1") require("dotenv").config();
 
 function getDefaultStayDates() {
   const checkIn = new Date();
