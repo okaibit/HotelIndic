@@ -3032,6 +3032,11 @@ function initRealMap(){
       btn.textContent = "⌖";
     }
 
+    realMap.flyTo(e.latlng, 16, {
+      animate: true,
+      duration: 1.2
+    });
+
     L.marker(e.latlng, {
       icon: L.divIcon({
         className: "user-location-marker",
@@ -3911,7 +3916,11 @@ document.getElementById("mapLocate").addEventListener("click", ()=>{
   btn.disabled = true;
   btn.textContent = "…";
 
-  realMap.locate({ setView: true, maxZoom: 13, enableHighAccuracy: true, timeout: 10000 });
+  realMap.locate({
+    setView: false,
+    enableHighAccuracy: true,
+    timeout: 10000
+  });
 });
 
 /* ============================= FILTERING / SORTING ============================= */
