@@ -3910,6 +3910,11 @@ document.getElementById("zoomOut").addEventListener("click", ()=>{
 document.getElementById("zoomReset").addEventListener("click", resetView);
 
 document.getElementById("mapLocate").addEventListener("click", ()=>{
+  console.log("HotelIndice location button clicked", {
+    mapReady: !!realMap,
+    permission: navigator.permissions ? "permissions-api-available" : "permissions-api-unavailable"
+  });
+
   if(!realMap) return;
 
   const btn = document.getElementById("mapLocate");
